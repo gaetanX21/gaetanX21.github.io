@@ -1,12 +1,12 @@
-- title: Links
-  type: map
-  contents:
-    - name: GitHub
-      value: <a href="https://https://github.com/gaetanX21">github.com/gaetanX21</a>
-    - name: Email
-      value: <a href="mailto:gaetan.ecrepont@polytechnique.org">gaetan.ecrepont@polytechnique.org</a>
-    - name: LinkedIn
-      value: <a href="https://www.linkedin.com/in/gaetanecrepont/">linkedin.com/in/gaetanecrepont</a>
+# - title: Links
+#   type: map
+#   contents:
+#     - name: GitHub
+#       value: <a href="https://https://github.com/gaetanX21">github.com/gaetanX21</a>
+#     - name: Email
+#       value: <a href="mailto:gaetan.ecrepont@polytechnique.org">gaetan.ecrepont@polytechnique.org</a>
+#     - name: LinkedIn
+#       value: <a href="https://www.linkedin.com/in/gaetanecrepont/">linkedin.com/in/gaetanecrepont</a>
 
 - title: Education
   type: time_table
