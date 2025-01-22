@@ -1,97 +1,88 @@
-- title: General Information
+- title: Links
   type: map
   contents:
-    - name: Full Name
-      value: Albert Einstein
-    - name: Date of Birth
-      value: 14th March 1879
-    - name: Languages
-      value: English, German
+    - name: GitHub
+      value: <a href="https://https://github.com/gaetanX21">github.com/gaetanX21</a>
+    - name: Email
+      value: <a href="mailto:gaetan.ecrepont@polytechnique.org">gaetan.ecrepont@polytechnique.org</a>
+    - name: LinkedIn
+      value: <a href="https://www.linkedin.com/in/gaetanecrepont/">linkedin.com/in/gaetanecrepont</a>
 
 - title: Education
   type: time_table
   contents:
-    - title: PhD
-      institution: University of Zurich, Zurich, Switzerland
-      year: 1905
+    - title: Master 2, Mathematics & Machine Learning ("MVA")
+      institution: ENS Paris-Saclay, France
+      location: Paris, France
+      year: 2024-2025
       description:
-        - Description 1.
-        - Description 2.
-        - title: Description 3.
-          contents:
-            - Sub-description 1.
-            - Sub-description 2.
-    - title: Federal teaching diploma
-      institution: Eidgenössische Technische Hochschule, Zurich, Switzerland
-      year: 1900
+        - Applied Mathematics & Machine Learning.
+        - Relevant coursework includes Probabilistic Graphical Models, (Geometric) Deep Learning, Time Series Analysis, Generative Modeling, Optimal Transport, LLMs, Random Matrix Theory, Bayesian ML, AGI Safety, Interactions.
+        - Partenered with APHP (Assistance Publique - Hôpitaux de Paris) to develop a LLM-powered tool for parsing and summarizing medical reports.
+    - title: Master of Science ("Cycle Ingénieur Polytechnicien")
+      institution: Ecole Polytechnique, France
+      location: Palaiseau, France
+      year: 2021-2024
       description:
-        - Description 1.
-        - Description 2.
+        - Applied Mathematics & Computer Science.
+        - Relevant coursework includes Statistics, Modeling, Random Processes, Stochastic Calculus, Statistical Physics, Optimization, Algorithms & Machine Learning.
+    - title: Bachelor of Science ("MPSI/MP*")
+      institution: Lycée Louis-le-Grand, France
+      location: Paris, France
+      year: 2019-2021
+      description:
+        - Core curriculum in Mathematics, Physics, and Computer Science.
+    - title: Exchange Student
+      institution: Bozeman High School
+      location: Bozeman, Montana
+      year: 2016-2017
 
 - title: Experience
   type: time_table
   contents:
-    - title: Professor of Theoretical Physics
-      institution: Institute for Advanced Study, Princeton University
-      year: 1933 - 1955
+    - title: Quantitative Research Intern
+      institution: Farringdon Capital
+      location: London, UK
+      year: Apr-Aug 2024
+    - title: Data Science Intern
+      institution: Atlante Energy
+      year: Jun-Sep 2023
       description:
-        - Description 1.
-        - Description 2.
-        - title: Description 3.
-          contents:
-            - Sub-description 1.
-            - Sub-description 2.
-    - title: Visiting Professor
-      institution: California Institute of Technology, Pasadena, California, US
-      year: 1933
+        - Analyzed charging point data and extracted valuable insights, with special focus on optimal charger sizing.
+        - Proposed new real-time charging point KPIs for Operations Dashboard.
+        - Created and tested two novel heuristics for Charging Profile inference, with the ultimate goal of better matching power demand.
+    - title: Officer Cadet
+      institution: Commando Paratroopers no.30
+      year: 2021-2022
       description:
-        - Description 1.
-        - Description 2.
+        - Assistant to Head of Commando Division.
+        - Military training & personal development.
 
-    - title: Director
-      institution: Kaiser Wilhelm Institute for Physics, Berlin, Germany.
-      year: 1917-1933
-
-    - title: Professor of Theoretical Physics
-      institution: Karl-Ferdinand University, Prague, Czechoslovakia
-      year: 1911 - 1917
-      description:
-
-    - title: Associate Professor of Theoretical Physics
-      institution: University of Zurich, Zurich, Switzerland
-      year: 1909 - 1911
-
-- title: Open Source Projects
+- title: Projects
   type: time_table
   contents:
-    - title: <a href="https://github.com/alshedivat/al-folio">al-folio</a>
-      year: 2015-now
-      description: A beautiful, simple, clean, and responsive Jekyll theme for academics.
+    - title: LLM-Powered Medical Report Summarization
+      year: Jan 2025
+    - title: Diffusion Schrödinger Bridge
+      year: Dec-Jan 2024
+    - title: Equivariant Diffusion for Molecule Generation in 3D
+      year: Nov 2024
+    - title: Score-Based Generative Modeling
+      year: Oct 2024
+    - title: High-Frequency Volatility Estimation
+      year: Feb-Apr 2024
+    - title: Signature Trading
+      year: Sep-Dec 2023
+    - title: Knowledge Graph of Mathematics
+      year: Mar-Jun 2023
+    - title: Solving simple PDEs using MCMC
+      year: May 2023
+    - title: Algorithmic Collusion
+      year: Sep 2022-Apr 2023
 
-- title: Honors and Awards
-  type: time_table
-  contents:
-    - year: 1921
-      items:
-        - Nobel Prize in Physics
-        - Matteucci Medal
-    - year: 2029
-      items:
-        - Max Planck Medal
-
-- title: Academic Interests
+- title: Interests
   type: nested_list
   contents:
-    - title: Topic 1.
-      items:
-        - Description 1.
-        - Description 2.
-    - title: Topic 2.
-      items:
-        - Description 1.
-        - Description 2.
-
-- title: Other Interests
-  type: list
-  contents:
-    - <u>Hobbies:</u> Hobby 1, Hobby 2, etc.
+    - title: Machine Learning
+    - title: Markets
+    - title: Sports

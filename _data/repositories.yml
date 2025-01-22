@@ -1,14 +1,10 @@
-github_users:
-  - torvalds
-  - alshedivat
+# github_users:
+#   - gaetanX21
 
-repo_description_lines_max: 2
+repo_description_lines_max: 3
 
 github_repos:
-  - alshedivat/al-folio
-  - jekyll/jekyll
-  - twbs/bootstrap
-  - jquery/jquery
-  - FortAwesome/Font-Awesome
-  - mathjax/MathJax
-  - jpswalsh/academicons
+  - gaetanX21/dsb-gaussian
+  - gaetanX21/generative-SDE
+  - gaetanX21/lenotre
+  - gaetanX21/e3-egnn
