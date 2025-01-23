@@ -5,6 +5,11 @@ repo_description_lines_max: 3
 
 github_repos:
   - gaetanX21/dsb-gaussian
-  - gaetanX21/generative-SDE
+  - gaetanX21/generative-sde
   - gaetanX21/lenotre
   - gaetanX21/e3-egnn
+  - gaetanX21/hf-volatility
+  - gaetanX21/sig-trading
+  - gaetanX21/eloquent
+  - gaetanX21/mathematics-graph
+  - gaetanX21/pde-markov

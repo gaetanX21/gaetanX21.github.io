@@ -2,7 +2,7 @@
 layout: about
 title: about
 permalink: /
-subtitle: Machine Learning & Applied Mathematics at ENS Paris-Saclay & Ecole Polytechnique
+subtitle: Final-year Master's student in Machine Learning with a background in Applied Mathematics.
 
 profile:
   align: right
@@ -14,8 +14,7 @@ selected_papers: false # includes a list of papers marked as "selected={true}"
 social: true # includes social icons at the bottom of the page
 ---
 
-<!-- Write your biography here. Tell the world about yourself. Link to your favorite [subreddit](http://reddit.com). You can put a picture in, too. The code is already in, just name your picture `prof_pic.jpg` and put it in the `img/` folder.
+**Studies:** I hold a Master's degree in Applied Mathematics from
+ <a href="https://www.polytechnique.edu/">Ecole Polytechnique</a> and I am now pursuing the <a href="https://www.master-mva.com/">MVA</a> Master 2 program in Machine Learning at <a href="https://www.ens-paris-saclay.fr/">ENS Paris-Saclay</a>.
 
-Put your address / P.O. box / other info right below your picture. You can also disable any of these elements by editing `profile` property of the YAML header of your `_pages/about.md`. Edit `_bibliography/papers.bib` and Jekyll will render your [publications page](/al-folio/publications/) automatically.
-
-Link to your social media connections, too. This theme is set up to use [Font Awesome icons](https://fontawesome.com/) and [Academicons](https://jpswalsh.github.io/academicons/), like the ones below. Add your Facebook, Twitter, LinkedIn, Google Scholar, or just disable all of them. -->
+**Interests:** My goal is to apply interpretable machine learning & robust statistical models in high-impact domains among healthcare, finance, and energy.

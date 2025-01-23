@@ -11,23 +11,23 @@
 - title: Education
   type: time_table
   contents:
-    - title: Master 2, Mathematics & Machine Learning ("MVA")
-      institution: ENS Paris-Saclay, France
+    - title: Master 2, Machine Learning & Mathematics ("MVA")
+      institution: ENS Paris-Saclay
       location: Paris, France
       year: 2024-2025
       description:
         - Applied Mathematics & Machine Learning.
-        - Relevant coursework includes Probabilistic Graphical Models, (Geometric) Deep Learning, Time Series Analysis, Generative Modeling, Optimal Transport, LLMs, Random Matrix Theory, Bayesian ML, AGI Safety, Interactions.
+        - Relevant coursework includes Probabilistic Graphical Models, (Geometric) Deep Learning, Time Series Analysis, Generative Modeling, Optimal Transport, LLMs, Random Matrix Theory, Bayesian ML, AGI Safety, Algorithms for protein science, Interactions.
         - Partenered with APHP (Assistance Publique - Hôpitaux de Paris) to develop a LLM-powered tool for parsing and summarizing medical reports.
     - title: Master of Science ("Cycle Ingénieur Polytechnicien")
-      institution: Ecole Polytechnique, France
+      institution: Ecole Polytechnique
       location: Palaiseau, France
       year: 2021-2024
       description:
         - Applied Mathematics & Computer Science.
         - Relevant coursework includes Statistics, Modeling, Random Processes, Stochastic Calculus, Statistical Physics, Optimization, Algorithms & Machine Learning.
     - title: Bachelor of Science ("MPSI/MP*")
-      institution: Lycée Louis-le-Grand, France
+      institution: Lycée Louis-le-Grand
       location: Paris, France
       year: 2019-2021
       description:
@@ -46,13 +46,14 @@
       year: Apr-Aug 2024
     - title: Data Science Intern
       institution: Atlante Energy
+      location: Milan, Italy
       year: Jun-Sep 2023
       description:
-        - Analyzed charging point data and extracted valuable insights, with special focus on optimal charger sizing.
+        - Analyzed charging point data and extracted valuable insights, with special focus on optimal charger dimensioning.
         - Proposed new real-time charging point KPIs for Operations Dashboard.
-        - Created and tested two novel heuristics for Charging Profile inference, with the ultimate goal of better matching power demand.
     - title: Officer Cadet
       institution: Commando Paratroopers no.30
+      location: Orléans, France
       year: 2021-2022
       description:
         - Assistant to Head of Commando Division.
@@ -63,22 +64,31 @@
   contents:
     - title: LLM-Powered Medical Report Summarization
       year: Jan 2025
-    - title: Diffusion Schrödinger Bridge
+      description: Partenered with APHP (Assistance Publique - Hôpitaux de Paris) to develop a LLM-powered tool for parsing and summarizing medical reports of scanners for both doctors and patients.
+    - title: <a href="https://github.com/gaetanX21/dsb-gaussian/blob/main/report/report.pdf">Diffusion Schrödinger Bridge</a>
       year: Dec-Jan 2024
+      description: Theoretical study of the Schrödinger Bridge problem & PyTorch implementation of the Diffusion Schrödinger Bridge algorithm to study convergence properties in the Gaussian case.
     - title: Equivariant Diffusion for Molecule Generation in 3D
       year: Nov 2024
+      description: Demonstration of the benefits of incorporating E(3)-equivariance in Graph Neural Networks through toy model experiments on the QM9 drugs dataset.
     - title: Score-Based Generative Modeling
       year: Oct 2024
+      description: Theoretical study of Score-Based Generative Modeling & PyTorch implementation to compare Langevin, SDE and ODE sampling methods. Also explored controlled generation techniques, including conditional generation and inpainting.
     - title: High-Frequency Volatility Estimation
       year: Feb-Apr 2024
+      description: Implementation of non-naive volatility estimators for high frequency financial data by accounting for microstructure noise & Modeling high-frequency price dynamics using Hawkes processes. Theory tested on EUR/USD tick data.
     - title: Signature Trading
       year: Sep-Dec 2023
+      description: Theoretical study of the signature object and its application to portfolio optimization. Implementation of a signature-based trading strategy on synthetic data to reproduce and extend results from the literature.
     - title: Knowledge Graph of Mathematics
       year: Mar-Jun 2023
+      description: Built a RDF graph of mathematics on Neo4j using data queried from Wikidata and scraped from Wikipedia. Analyzed and visualized the graph using Gephi.
     - title: Solving simple PDEs using MCMC
       year: May 2023
+      description: Implemented a probabilistic approach relying on Markov Chains Monte Carlo to solve simple partial differential equations with Dirichlet conditions.
     - title: Algorithmic Collusion
       year: Sep 2022-Apr 2023
+      description: Developed dynamic pricing algorithms which utilize reinforcement learning to determine the optimal retail price on a market with other participants also dynamically updating their prices. Trained different classes of RL pricing agents and observed their collusive behavior in various simulated economic environments, thus demonstrating the robustness of algorithmic collusion.
 
 - title: Interests
   type: nested_list
