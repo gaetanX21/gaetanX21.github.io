@@ -11,29 +11,29 @@
 - title: Education
   type: time_table
   contents:
-    - title: Master 2, Machine Learning & Mathematics ("MVA")
-      institution: ENS Paris-Saclay
+    - title: Master 2, Machine Learning & Mathematics (<a href="https://www.master-mva.com/">"MVA"</a>)
+      institution: <a href="https://www.ens-paris-saclay.fr/">ENS Paris-Saclay</a>
       location: Paris, France
       year: 2024-2025
       description:
         - Applied Mathematics & Machine Learning.
         - Relevant coursework includes Probabilistic Graphical Models, (Geometric) Deep Learning, Time Series Analysis, Generative Modeling, Optimal Transport, LLMs, Random Matrix Theory, Bayesian ML, AGI Safety, Algorithms for protein science, Interactions.
         - Partenered with APHP (Assistance Publique - Hôpitaux de Paris) to develop a LLM-powered tool for parsing and summarizing medical reports.
-    - title: Master of Science ("Cycle Ingénieur Polytechnicien")
-      institution: Ecole Polytechnique
+    - title: Master of Science (<a href="https://programmes.polytechnique.edu/cycle-ingenieur-polytechnicien/cycle-ingenieur-polytechnicien">"Cycle Ingénieur Polytechnicien"</a>)
+      institution: <a href="https://www.polytechnique.edu/">Ecole Polytechnique</a>
       location: Palaiseau, France
       year: 2021-2024
       description:
         - Applied Mathematics & Computer Science.
         - Relevant coursework includes Statistics, Modeling, Random Processes, Stochastic Calculus, Statistical Physics, Optimization, Algorithms & Machine Learning.
     - title: Bachelor of Science ("MPSI/MP*")
-      institution: Lycée Louis-le-Grand
+      institution: <a href="https://www.louis-le-grand.org/">Lycée Louis-le-Grand</a>
       location: Paris, France
       year: 2019-2021
       description:
         - Core curriculum in Mathematics, Physics, and Computer Science.
     - title: Exchange Student
-      institution: Bozeman High School
+      institution: <a href="https://bhs.bsd7.org/">Bozeman High School</a>
       location: Bozeman, Montana
       year: 2016-2017
 
@@ -41,18 +41,18 @@
   type: time_table
   contents:
     - title: Quantitative Research Intern
-      institution: Farringdon Capital
+      institution: <a href="https://www.farringdon-capital.com/">Farringdon Capital</a>
       location: London, UK
       year: Apr-Aug 2024
     - title: Data Science Intern
-      institution: Atlante Energy
+      institution: <a href="https://atlante.energy/">Atlante Energy</a>
       location: Milan, Italy
       year: Jun-Sep 2023
       description:
         - Analyzed charging point data and extracted valuable insights, with special focus on optimal charger dimensioning.
         - Proposed new real-time charging point KPIs for Operations Dashboard.
     - title: Officer Cadet
-      institution: Commando Paratroopers no.30
+      institution: <a href="https://fr.wikipedia.org/wiki/Commando_parachutiste_de_l%27air_no_30">Commando Paratroopers no.30</a>
       location: Orléans, France
       year: 2021-2022
       description:
@@ -62,31 +62,31 @@
 - title: Projects
   type: time_table
   contents:
-    - title: LLM-Powered Medical Report Summarization
+    - title: <a href="https://github.com/mathias-grau/MedReport/">LLM-Powered Medical Report Summarization</a>
       year: Jan 2025
       description: Partenered with APHP (Assistance Publique - Hôpitaux de Paris) to develop a LLM-powered tool for parsing and summarizing medical reports of scanners for both doctors and patients.
     - title: <a href="https://github.com/gaetanX21/dsb-gaussian/blob/main/report/report.pdf">Diffusion Schrödinger Bridge</a>
       year: Dec-Jan 2024
       description: Theoretical study of the Schrödinger Bridge problem & PyTorch implementation of the Diffusion Schrödinger Bridge algorithm to study convergence properties in the Gaussian case.
-    - title: Equivariant Diffusion for Molecule Generation in 3D
+    - title: <a href="https://github.com/gaetanX21/e3-egnn/blob/main/report/report.pdf">Equivariant Diffusion for Molecule Generation in 3D</a>
       year: Nov 2024
       description: Demonstration of the benefits of incorporating E(3)-equivariance in Graph Neural Networks through toy model experiments on the QM9 drugs dataset.
-    - title: Score-Based Generative Modeling
+    - title: <a href="https://github.com/gaetanX21/generative-sde/blob/main/report/latex/report.pdf">Score-Based Generative Modeling</a>
       year: Oct 2024
       description: Theoretical study of Score-Based Generative Modeling & PyTorch implementation to compare Langevin, SDE and ODE sampling methods. Also explored controlled generation techniques, including conditional generation and inpainting.
-    - title: High-Frequency Volatility Estimation
+    - title: <a href="https://github.com/gaetanX21/hf-volatility/blob/main/hf-volatility.pdf">High-Frequency Volatility Estimation</a>
       year: Feb-Apr 2024
       description: Implementation of non-naive volatility estimators for high frequency financial data by accounting for microstructure noise & Modeling high-frequency price dynamics using Hawkes processes. Theory tested on EUR/USD tick data.
-    - title: Signature Trading
+    - title: <a href="https://github.com/gaetanX21/sig-trading/blob/main/report.pdf">Signature Trading</a>
       year: Sep-Dec 2023
       description: Theoretical study of the signature object and its application to portfolio optimization. Implementation of a signature-based trading strategy on synthetic data to reproduce and extend results from the literature.
-    - title: Knowledge Graph of Mathematics
+    - title: <a href="https://github.com/gaetanX21/mathematics-graph/blob/main/mathematics'%20graph.pdf">Knowledge Graph of Mathematics</a>
       year: Mar-Jun 2023
       description: Built a RDF graph of mathematics on Neo4j using data queried from Wikidata and scraped from Wikipedia. Analyzed and visualized the graph using Gephi.
-    - title: Solving simple PDEs using MCMC
+    - title: <a href="https://github.com/gaetanX21/pde-markov/blob/main/PDE_Markov_Chains.pdf">Solving simple PDEs using MCMC</a>
       year: May 2023
       description: Implemented a probabilistic approach relying on Markov Chains Monte Carlo to solve simple partial differential equations with Dirichlet conditions.
-    - title: Algorithmic Collusion
+    - title: <a href="https://github.com/gaetanX21/algo-collusion/blob/main/rapport.pdf">Algorithmic Collusion</a>
       year: Sep 2022-Apr 2023
       description: Developed dynamic pricing algorithms which utilize reinforcement learning to determine the optimal retail price on a market with other participants also dynamically updating their prices. Trained different classes of RL pricing agents and observed their collusive behavior in various simulated economic environments, thus demonstrating the robustness of algorithmic collusion.
 
