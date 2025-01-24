@@ -2,19 +2,20 @@
 layout: page
 title: Diffusion Schrödinger Bridge
 description: Theoretical study of the Schrödinger Bridge problem & PyTorch implementation of the Diffusion Schrödinger Bridge algorithm to study convergence properties in the Gaussian case.
-img: assets/img/dsb/troll2torch.png
+img: assets/video/dsb/troll2torch_all.gif
 importance: 1
 category: work
 related_publications: false
 ---
 
-<div class="row">
-    <div class="col-sm mt-3 mt-md-0">
-        {% include figure.liquid loading="eager" path="assets/img/dsb/troll2torch.png" title="DSB example" class="img-fluid rounded z-depth-1" %}
+
+<div class="row justify-content-center">
+    <div class="col-sm-6 mt-3 mt-md-0">
+        {% include figure.liquid loading="eager" path="assets/video/dsb/troll2torch_all.gif" title="DSB animation" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
 <div class="caption">
-    Theoretical study of the Schrödinger Bridge problem & PyTorch implementation of the Diffusion Schrödinger Bridge algorithm to study convergence properties in the Gaussian case.
+    Gradual convergence of the IPF algorithm to find the schrödinger bridge from $p_\textnormal{pytorch}$ to $p_\textnormal{trollface}$ under Gaussian reference dynamics. Computed using DSB.
 </div>
 
 NB: This post is just a recap of my work, but you can get my full report <a href="https://github.com/gaetanX21/dsb-gaussian/blob/main/report/report.pdf">here</a>.
@@ -33,8 +34,8 @@ Let's first present the Schrödinger Bridge problem, which is the theoretical fr
 The Schrödinger Bridge (SB) problem was introduced in 1932 by Schrödinger [^schrodinger] and asks the following question:
 > Let $S$ be a particle system composed of a large number of independent particles following a Brownian motion. We observe $S\sim \nu_0$ at time $0$ and $S\sim \nu_1$ at time $T$. What is the most likely dynamical behavior of $S$ between $0$ and $T$ ?
 
-<div class="row">
-    <div class="col-sm mt-3 mt-md-0">
+<div class="row justify-content-center">
+    <div class="col-sm-6 mt-3 mt-md-0">
         {% include figure.liquid loading="eager" path="assets/img/dsb/sb-statphy.png" title="SB as a statistical physics problem." class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
@@ -54,8 +55,8 @@ To solve the SB problem, we use the Iterative Proportional Fitting (IPF) algorit
 Under mild conditinos on $p_\textnormal{data}$ and $p_\textnormal{prior}$, the IPF algorithm converges to a fixed point $S$ which is the (unique) solution to the SB problem.
 Note that $P^0$ is obtained by starting from $p_\textnormal{data}$ and using the transitions of the reference dynamic.
 
-<div class="row">
-    <div class="col-sm mt-3 mt-md-0">
+<div class="row justify-content-center">
+    <div class="col-sm-6 mt-3 mt-md-0">
         {% include figure.liquid loading="eager" path="assets/img/dsb/ipfp_illustration.png" title="IPF" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
