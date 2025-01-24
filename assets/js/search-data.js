@@ -18,14 +18,14 @@ ninja.data = [{
           },
         },{id: "nav-projects",
           title: "projects",
-          description: "A growing collection of cool projects.",
+          description: "A growing collection of cool projects. (older projects are not listed here but can be found on my GitHub/CV)",
           section: "Navigation",
           handler: () => {
             window.location.href = "/projects/";
           },
         },{id: "nav-repositories",
           title: "repositories",
-          description: "GitHub repositories for my main projects.",
+          description: "GitHub repos for my main projects.",
           section: "Navigation",
           handler: () => {
             window.location.href = "/repositories/";
@@ -42,6 +42,16 @@ ninja.data = [{
           description: "Theoretical study of the Schrödinger Bridge problem &amp; PyTorch implementation of the Diffusion Schrödinger Bridge algorithm to study convergence properties in the Gaussian case.",
           section: "Projects",handler: () => {
               window.location.href = "/projects/dsb/";
+            },},{id: "projects-equivariant-diffusion-for-molecule-generation-in-3d",
+          title: 'Equivariant Diffusion for Molecule Generation in 3D',
+          description: "Demonstration of the benefits of incorporating E(3)-equivariance in Graph Neural Networks through toy model experiments on the QM9 drugs dataset.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/e3egnn/";
+            },},{id: "projects-score-based-generative-modeling",
+          title: 'Score-Based Generative Modeling',
+          description: "Theoretical study of Score-Based Generative Modeling &amp; PyTorch implementation to compare Langevin, SDE and ODE sampling methods. Also explored controlled generation techniques, including conditional generation and inpainting.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/sde/";
             },},{
       id: 'light-theme',
       title: 'Change theme to light',
