@@ -6,6 +6,8 @@ img: assets/video/sde/pc.gif
 importance: 1
 category: work
 related_publications: false
+toc:
+  sidebar: left
 ---
 <div class="row justify-content-center">
     <div class="col-sm mt-3 mt-md-0">

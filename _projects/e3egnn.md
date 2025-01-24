@@ -6,6 +6,8 @@ img: assets/video/e3egnn/molecule-diffusion.gif
 importance: 1
 category: work
 related_publications: false
+toc:
+  sidebar: left
 ---
 <div class="row justify-content-center">
     <div class="col-sm-6 mt-3 mt-md-0">
