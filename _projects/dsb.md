@@ -2,7 +2,7 @@
 layout: page
 title: Diffusion Schrödinger Bridge
 description: Theoretical study of the Schrödinger Bridge problem & PyTorch implementation of the Diffusion Schrödinger Bridge algorithm to study convergence properties in the Gaussian case.
-img: assets/video/dsb/troll2torch_all.gif
+img: assets/img/dsb/troll2torch.png
 importance: 1
 category: work
 related_publications: false

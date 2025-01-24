@@ -2,7 +2,7 @@
 layout: page
 title: Equivariant Diffusion for Molecule Generation in 3D
 description: Demonstration of the benefits of incorporating E(3)-equivariance in Graph Neural Networks through toy model experiments on the QM9 drugs dataset.
-img: assets/video/e3egnn/molecule-diffusion.gif
+img: assets/img/e3egnn/overview_diffusion_equivariance.png
 importance: 1
 category: work
 related_publications: false

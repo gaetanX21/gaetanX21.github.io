@@ -2,7 +2,7 @@
 layout: page
 title: Score-Based Generative Modeling
 description: Theoretical study of Score-Based Generative Modeling & PyTorch implementation to compare Langevin, SDE and ODE sampling methods. Also explored controlled generation techniques, including conditional generation and inpainting.
-img: assets/video/sde/pc.gif
+img: assets/img/sde/pc.png
 importance: 1
 category: work
 related_publications: false
