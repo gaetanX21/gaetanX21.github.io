@@ -8,12 +8,12 @@ category: work
 related_publications: false
 ---
 <div class="row justify-content-center">
-    <div class="col-sm-6 mt-3 mt-md-0">
-        {% include figure.liquid loading="eager" path="assets/video/sde/pc.gif" title="PC sampling" class="img-fluid rounded z-depth-1" %}
+    <div class="col-sm mt-3 mt-md-0">
+        {% include figure.liquid loading="eager" path="assets/img/sde/diffusion_schematic.png" title="Diffusion" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
 <div class="caption">
-    Realistic generated MNIST samples using Predictor-Corrector Sampling with Reverse SDE + Langevin Dynamics.
+    Score-based generative modeling is the reversal of a diffusion SDE. Source: Song et al. paper.
 </div>
 
 NB: This post is just a recap of my work, but you can get my full report <a href="https://github.com/gaetanX21/generative-sde/blob/main/report/report.pdf">here</a>.

@@ -6,6 +6,8 @@ img: assets/video/dsb/troll2torch_all.gif
 importance: 1
 category: work
 related_publications: false
+toc:
+  sidebar: left
 ---
 
 
@@ -50,10 +52,10 @@ Note that by setting $\nu_0=p_\textnormal{data}$ and $\nu_1=p_\textnormal{prior}
 
 ## The Iterative Proportional Fitting Algorithm
 To solve the SB problem, we use the Iterative Proportional Fitting (IPF) algorithm. It is a *discrete* algorithm, meaning that it approximates the *continuous* SB problem by discretizing the time interval $[0,T]$ into $N$ steps. The IPF algorithm is an alternative projection scheme w.r.t. to the Kullback-Leibler divergence which starts from an initial bridge $P_0$ and iteratively refines it according to the following two-step procedure:
-1. **Forward step**: Given the bridge $P^{2n}: x_0 \sim p_\textnormal{data} \rightarrow x_T \sim p_\textnormal{prior}$, compute the bridge $P^{2n+1}: x_T \sim p_\textnormal{prior} \rightarrow x_0 \sim p_\textnormal{data}$ by starting from $x_T \sim p_\textnormal{prior}$ and using the reverse transitions of $P^{2n}$.
-2. **Backward step**: Given the bridge $P^{2n+1}: x_T \sim p_\textnormal{prior} \rightarrow x_0 \sim p_\textnormal{data}$, compute the bridge $P^{2n+2}: x_0 \sim p_\textnormal{data} \rightarrow x_T \sim p_\textnormal{prior}$ by starting from $x_0 \sim p_\textnormal{data}$ and using the reverse transitions of $P^{2n+1}$.
-Under mild conditinos on $p_\textnormal{data}$ and $p_\textnormal{prior}$, the IPF algorithm converges to a fixed point $S$ which is the (unique) solution to the SB problem.
-Note that $P^0$ is obtained by starting from $p_\textnormal{data}$ and using the transitions of the reference dynamic.
+1. **Forward step**: Given the bridge $P^{2n}: \mathbf{x} _ 0 \sim p _ \textnormal{data} \rightarrow \mathbf{x} _ T \sim p _ \textnormal{prior}$, compute the bridge $P^{2n+1}: \mathbf{x} _ T \sim p _ \textnormal{prior} \rightarrow \mathbf{x} _ 0 \sim p _ \textnormal{data}$ by starting from $\mathbf{x} _ T \sim p _ \textnormal{prior}$ and using the reverse transitions of $P^{2n}$.
+2. **Backward step**: Given the bridge $P^{2n+1}: \mathbf{x} _ T \sim p _ \textnormal{prior} \rightarrow \mathbf{x} _ 0 \sim p _ \textnormal{data}$, compute the bridge $P^{2n+2}: \mathbf{x} _ 0 \sim p _ \textnormal{data} \rightarrow \mathbf{x} _ T \sim p _ \textnormal{prior}$ by starting from $\mathbf{x} _ 0 \sim p _ \textnormal{data}$ and using the reverse transitions of $P^{2n+1}$.
+Under mild conditions on $p _ \textnormal{data}$ and $p _ \textnormal{prior}$, the IPF algorithm converges to a fixed point $S$ which is the (unique) solution to the SB problem.
+Note that $P^0$ is obtained by starting from $p _ \textnormal{data}$ and using the transitions of the reference dynamic.
 
 <div class="row justify-content-center">
     <div class="col-sm-6 mt-3 mt-md-0">
@@ -64,7 +66,7 @@ Note that $P^0$ is obtained by starting from $p_\textnormal{data}$ and using the
     The IPF algorithm amounts to iteratively solving half-bridges (i.e. projecting with respect to the KL divergence) until convergence to a fixed point denoted by $S$ here
 </div>
 
-The only difficulty in implementing IPF is that the reverse transitions are not known in closed-form. This is where the DSB model comes into play. Basically, DSB models all transitions as Gaussian kernels in such a way that the reverse transitions can be approximated in closed-form. However, this closed-form approximation still requires computing Stein scores (i.e. expressions of the form $\nabla_x \log p(x)$). We use score-matching to estimate these scores, yielding the DSB model.
+The only difficulty in implementing IPF is that the reverse transitions are not known in closed-form. This is where the DSB model comes into play. Basically, DSB models all transitions as Gaussian kernels in such a way that the reverse transitions can be approximated in closed-form. However, this closed-form approximation still requires computing Stein scores (i.e. expressions of the form $\nabla _ \mathbf{x} \log p(\mathbf{x})$). We use score-matching to estimate these scores, yielding the DSB model.
 
 
 ## The Gaussian Case
