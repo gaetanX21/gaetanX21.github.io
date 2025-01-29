@@ -37,7 +37,29 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/cv/";
           },
-        },{id: "projects-diffusion-schrödinger-bridge",
+        },{id: "post-a-geodesic-from-cat-to-dog",
+      
+        title: "A geodesic from cat to dog",
+      
+      description: "TL;DR: Entropic regularization relaxes the Kantorovitch problem into a strictly convex problem which can be solved efficiently with the Sinkhorn algorithm. We can use this to efficiently compute Wasserstein distances, barycenters, and finally geodesics between distributions.",
+      section: "Posts",
+      handler: () => {
+        
+          window.location.href = "/blog/2024/ot-geodesic/";
+        
+      },
+    },{id: "post-solving-the-assignement-problem-using-optimal-transport",
+      
+        title: "Solving the assignement problem using Optimal Transport",
+      
+      description: "TL;DR: The discrete Kantorovich problem amounts to a LP problem. In the uniform case, the solution is a permutation matrix which in fact solves the assignement problem.",
+      section: "Posts",
+      handler: () => {
+        
+          window.location.href = "/blog/2024/ot-assignement-problem/";
+        
+      },
+    },{id: "projects-diffusion-schrödinger-bridge",
           title: 'Diffusion Schrödinger Bridge',
           description: "Theoretical study of the Schrödinger Bridge problem &amp; PyTorch implementation of the Diffusion Schrödinger Bridge algorithm to study convergence properties in the Gaussian case.",
           section: "Projects",handler: () => {
