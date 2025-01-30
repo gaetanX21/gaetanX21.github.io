@@ -37,7 +37,18 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/cv/";
           },
-        },{id: "post-a-geodesic-from-cat-to-dog",
+        },{id: "post-intuitions-behind-benford-39-s-law",
+      
+        title: "Intuitions behind Benford&#39;s Law",
+      
+      description: "TL;DR: Many real-world datasets follow Benford&#39;s Law, which states that distribution of the first digit is not uniform. We provide three different intuitions behind this phenomenon.",
+      section: "Posts",
+      handler: () => {
+        
+          window.location.href = "/blog/2024/benford-law/";
+        
+      },
+    },{id: "post-a-geodesic-from-cat-to-dog",
       
         title: "A geodesic from cat to dog",
       
