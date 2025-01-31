@@ -70,6 +70,17 @@ ninja.data = [{
           window.location.href = "/blog/2024/ot-assignement-problem/";
         
       },
+    },{id: "post-the-case-against-leveraged-etfs",
+      
+        title: "The case against leveraged ETFs",
+      
+      description: "TL;DR: Leveraged ETFs amplify daily returns, which is not the same as basic leverage, especially in the long term. Digging into the math reveals that leveraged ETFs are not suitable buy-and-hold investments as they 1) exhibit huge price swings 2) incur a volatility drag.",
+      section: "Posts",
+      handler: () => {
+        
+          window.location.href = "/blog/2024/leveraged-etf/";
+        
+      },
     },{id: "projects-diffusion-schrödinger-bridge",
           title: 'Diffusion Schrödinger Bridge',
           description: "Theoretical study of the Schrödinger Bridge problem &amp; PyTorch implementation of the Diffusion Schrödinger Bridge algorithm to study convergence properties in the Gaussian case.",
