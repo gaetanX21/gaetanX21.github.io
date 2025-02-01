@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Effect of Noisy Covariates in Linear Regression"
+title: "Regression Dilution"
 date: 2025-02-01
 description: "TL;DR: When covariates in linear regression are subject to noise, the estimated regression coefficients shrink towards zero. We derive this effect mathematically and illustrate it with simulations."
 # tags:
@@ -14,6 +14,8 @@ $$
 \newcommand{\R}{\mathbb{R}}
 $$
 
+We first introduce the concept of **attenuation bias** in linear regression due to measurement error in the covariates. We derive the shrinkage effect in the one-dimensional case and extend it to the multivariate case. We do simulations to visualize the shrinkage effect as the signal-to-noise ratio (SNR) goes to zero.
+
 ## Introduction
 
 In classical linear regression, we assume a model of the form:
@@ -22,15 +24,24 @@ $$
 y = X\beta + \varepsilon
 $$
 
-where $X$ is an $n \times p$ matrix of covariates $x_i \in \R^p$, $\beta$ is a $p \times 1$ vector of coefficients, and $\varepsilon$ is noise. However, in many real-world scenarios, covariates themselves contain measurement noise:
+where $X$ is an $n \times p$ matrix of covariates $x_i \in \R^p$, $\beta$ is a $p \times 1$ vector of coefficients, and $\varepsilon$ is noise. **Weak exogeneity** is a key assumption in linear regression, which states that the covariates $X$ are fixed and non-random. In other words, the covariates are assumed to be measured without error. However, in many real-world scenarios, this hypothesis is violated: covariates themselves contain measurement noise:
 
 $$
 \tilde{X} = X + U
 $$
 
-where $U$ is an $n \times p$ matrix of noise $u_i \in \R^p$. This additional noise leads to a phenomenon known as **attenuation bias**, where the estimated coefficients shrink towards zero.
+where $U$ is an $n \times p$ matrix of noise $u_i \in \R^p$. This additional noise leads to a phenomenon known as **attenuation bias**, where the estimated coefficients shrink towards zero. Let's first derive this effect in the one-dimensional case.
+
+Note that in what follows we make the following the classical assumptions:
+- $x_i$ i.i.d. centered with variance $\sigma_x^2$ (or covariance $\Sigma_x$ in the multivariate case),
+- $u_i$ i.i.d. centered with variance $\sigma_u^2$ (or covariance $\Sigma_u$ in the multivariate case),
+- $\varepsilon_i$ i.i.d. centered with variance $\sigma_\varepsilon^2$,
+- $x_i, u_i, \varepsilon_i$ are independent of each other
+
 
 ## One-dimensional case
+
+Let's first derive the attenuation bias in the one-dimensional case.
 
 Consider the simple case of a one-dimensional linear regression model:
 
@@ -41,12 +52,14 @@ $$
 Now assume that we observe a noisy version of $x$: $\tilde{x} = x + u$, where $u$ is the noise term. The least squares estimator of $\beta$ using the noisy covariate $\tilde{x}$ is:
 
 $$
-\hat{\beta} = \frac{\Cov(\tilde{x}, y)}{\Var(\tilde{x})} = \frac{\Cov(x + u, \beta x + \varepsilon)}{\Var(x + u)} = \frac{\beta \Var(x) + \Cov(u, x)}{\Var(x) + \Var(u)} = \frac{\beta \sigma_x^2}{\sigma_x^2 + \sigma_u^2} = \lambda \beta
+\hat{\beta} = \frac{\Cov(\tilde{x}, y)}{\Var(\tilde{x})} = \frac{\Cov(x + u, \beta x + \varepsilon)}{\Var(x + u)} = \frac{\beta \Var(x)}{\Var(x) + \Var(u)} = \frac{\beta \sigma_x^2}{\sigma_x^2 + \sigma_u^2} = \lambda \beta
 $$
 
-where $\lambda = \frac{1}{1 + \frac{\sigma_u^2}{\sigma_x^2}}<1$ is the attenuation factor.
+where $\lambda = \frac{1}{1 + \frac{\sigma_u^2}{\sigma_x^2}}<1$ is the attenuation factor or shrinkage factor.
 
-Thus the estimated coefficient $\hat{\beta}$ is a scaled version of the true coefficient $\beta$, with the scaling factor $\lambda$ being less than 1. This implies that the estimated coefficient is biased towards zero due to the noise in the covariate. In particular, note that when $\sigma_u = 0$, we recover the unbiased estimator $\hat{\beta} = \beta$. Likewise, as $\sigma_u \to \infty$, the estimated coefficient $\hat{\beta} \to 0$ since the signal-to-noise ratio goes to zero.
+Thus the estimated coefficient $\hat{\beta}$ is a scaled version of the true coefficient $\beta$, with the scaling factor $\lambda$ being less than 1. This implies that the estimated coefficient is biased towards zero due to the noise in the covariate.
+
+In particular, note that when $\sigma_u = 0$, we recover the unbiased estimator $\hat{\beta} = \beta$. Likewise, as $\sigma_u \to \infty$, the estimated coefficient $\hat{\beta} \to 0$ since the SNR goes to zero.
 
 
 ## Multivariate case
@@ -65,7 +78,7 @@ $$
 \hat{\beta} = [(X + U)^T (X + U)]^{-1} (X + U)^T (X\beta + \varepsilon)
 $$
 
-We rewrite this to use the (weak) law of large numbers:
+We rewrite this expression so that the law of large numbers can be applied:
 
 $$
 \hat{\beta} = \bigg[\frac{1}{n}(X^T X + X^T U + U^T X + U^T U)\bigg]^{-1} \bigg[\frac{1}{n}(X^T X\beta + X^T \varepsilon + U^T X\beta + U^T \varepsilon)\bigg] 
@@ -98,7 +111,7 @@ where all the convergences are in probability[^strong].
 Combining these results and applying Sluskty's lemma and the continuous mapping theorem, we have:
 
 $$
-\hat{\beta} \xrightarrow[p]{} (\Sigma_x + \Sigma_u)^{-1} \Sigma_x \beta = \left(I + \Sigma_x^{-1} \Sigma_u \right)^{-1} \beta.
+\hat{\beta} \xrightarrow[]{\mathbb{P}} (\Sigma_x + \Sigma_u)^{-1} \Sigma_x \beta = \left(I + \Sigma_x^{-1} \Sigma_u \right)^{-1} \beta.
 $$
 
 Note that in the multi-dimensional case, the shrinkage factor is not a scalar but a matrix $\Lambda = (I + \Sigma_x^{-1} \Sigma_u)^{-1}$. In particular, although $\Sigma_x$ and $\Sigma_u$ are positive definite matrices, $\Sigma_x^{-1} \Sigma_u$ is not positive definite in general. Therefore it is more difficult to interpret the shrinkage effect in the multivariate case.
@@ -110,25 +123,27 @@ Additionally, we recover the unbiased estimator $\hat{\beta} = \beta$ when $\Sig
 
 ## Visualizing the shrinkage effect as SNR goes to zero
 
-We want to illustrate the gradual shrinkage of the estimated coefficients as the signal-to-noise ratio (SNR) decreases. We stick to the one-dimensional case for simplicity.
+We want to illustrate the gradual shrinkage of the estimated coefficients as the SNR gradually decreases. We stick to the one-dimensional case for simplicity.
 
-We simulate a linear regression model with a single covariate $x$ with $\sigma_x = 1$ and noise $u$ with $\sigma_u$ running from $0$ to $5 \sigma_x$. For each value of $\sigma_u$, we fit a linear regression model using the noisy covariate $x + u$ and record the estimated coefficient $\hat{\beta}$. We then plot the empirical shrinkage ratio $\frac{\hat{\beta}}{\beta}$ as a function of the SNR $\frac{\sigma_x}{\sigma_u}$. Additionally, we overlay the theoretical shrinkage factor $\lambda = \frac{1}{1 + \frac{\sigma_u^2}{\sigma_x^2}}$.
+We simulate a linear regression model with a single covariate $x$ with $\sigma_x = 1$ and noise $u$ with $\sigma_u$ running from $0$ to $5 \sigma_x$. For each value of $\sigma_u$, we fit a linear regression model using the noisy covariate $x + u$ and record the estimated coefficient $\hat{\beta}$.
+
+We then plot the empirical shrinkage ratio $\frac{\hat{\beta}}{\beta}$ as a function of the SNR $\frac{\sigma_x}{\sigma_u}$. Additionally, we overlay the theoretical shrinkage factor $\lambda = \frac{1}{1 + \frac{\sigma_u^2}{\sigma_x^2}}$.
 
 The results are shown in [Figure 1](#fig-1). As the SNR decreases, the estimated coefficients shrink towards zero, as expected. The empirical shrinkage ratio closely follows the theoretical shrinkage factor $\lambda$.
 
 <div class="row justify-content-center" id="fig-1">
-    <div class="col-sm-3 mt-3 mt-md-0">
+    <div class="col-sm mt-3 mt-md-0">
         {% include figure.liquid loading="eager" path="assets/img/posts/regression_dilution/snr_shrinkage.png" title="snr shrinkage" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
 <div class="caption">
-    Figure 1. Empirical shrinkage ratio as a function of the signal-to-noise ratio. The theoretical shrinkage factor $\lambda = \frac{1}{1 + \frac{\sigma_u^2}{\sigma_x^2}}$ is overlaid.
+    Figure 1. Empirical shrinkage ratio as a function of the SNR. The theoretical shrinkage factor $\lambda = \frac{1}{1 + \frac{\sigma_u^2}{\sigma_x^2}}$ is overlaid.
 </div>
 
 
 ## Conclusion
 
-When covariates are measured with noise, the estimated regression coefficients shrink towards zero, leading to bias. This is important in fields where measurement errors are common, such as economics and epidemiology. One way to mitigate this bias is to use error-in-variables models, which explicitly model the noise in the covariates. The simplest such model is probably Deming regression, which models a one-dimensional linear regression and assumes the SNR to be known. $\hat{beta}$ is then found by minimizing a weighted sum of squared residual to account for the noise in $x$.
+When covariates are measured with noise, the estimated regression coefficients shrink towards zero, leading to bias. This is important in fields where measurement errors are common, such as economics and epidemiology. One way to mitigate this bias is to use **error-in-variables models**, which explicitly model the noise in the covariates. The simplest such model is probably Deming regression, which models a one-dimensional linear regression and assumes the SNR to be known. $\hat{\beta}$ is then found by minimizing a *weighted* sum of squared residual to account for the noise in $x$.
 
 ---
 
