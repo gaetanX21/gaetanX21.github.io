@@ -37,7 +37,18 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/cv/";
           },
-        },{id: "post-intuitions-behind-benford-39-s-law",
+        },{id: "post-regression-dilution",
+      
+        title: "Regression Dilution",
+      
+      description: "TL;DR: When covariates in linear regression are subject to noise, the estimated regression coefficients shrink towards zero. We derive this effect mathematically and illustrate it with simulations.",
+      section: "Posts",
+      handler: () => {
+        
+          window.location.href = "/blog/2025/regression-dilution/";
+        
+      },
+    },{id: "post-intuitions-behind-benford-39-s-law",
       
         title: "Intuitions behind Benford&#39;s Law",
       
