@@ -232,6 +232,7 @@ We've shown that LETFs are more complex than they seem. In particular, buying a 
 
 You may wonder: who uses LETFs then? I have no definite answer, but certainly traders who wish to hedge their positions with less collateral may find LETFs useful. In addition, LETFs can be used to speculate on short-term market movements. The average detention period of `TQQQ` (~3 days) and `SQQQ` (<1 day) is a clear indication that LETFs are not meant to be held for long periods.
 
+---
 
 **Footnotes & References**:
 
