@@ -3,7 +3,7 @@ layout: post
 title: "Regression Dilution"
 date: 2025-02-01
 description: "TL;DR: When covariates in linear regression are subject to noise, the estimated regression coefficients shrink towards zero. We derive this effect mathematically and illustrate it with simulations."
-# tags:
+tags: robust-ml
 thumbnail: assets/img/posts/regression_dilution/snr_shrinkage.png
 ---
 

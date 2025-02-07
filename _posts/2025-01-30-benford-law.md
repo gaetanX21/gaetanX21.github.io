@@ -1,9 +1,9 @@
 ---
 layout: post
 title: "Intuitions behind Benford's Law"
-date: 2024-11-20
+date: 2024-09-20
 description: "TL;DR: Many real-world datasets follow Benford's Law, which states that distribution of the first digit is not uniform. We provide three different intuitions behind this phenomenon."
-# tags: 
+tags: misc 
 thumbnail: assets/img/posts/benford_law/naive_vs_benford.png
 ---
 

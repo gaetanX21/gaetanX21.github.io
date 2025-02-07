@@ -3,7 +3,7 @@ layout: post
 title: "The case against leveraged ETFs"
 date: 2024-06-17
 description: "TL;DR: Leveraged ETFs amplify daily returns, which is not the same as basic leverage, especially in the long term. Digging into the math reveals that leveraged ETFs are not suitable buy-and-hold investments as they 1) exhibit huge price swings 2) incur a volatility drag."
-# tags: 
+tags: quant-finance
 thumbnail: assets/img/posts/leveraged_etf/tqqq_vs_leverage.png
 ---
 
