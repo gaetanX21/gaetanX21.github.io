@@ -37,7 +37,18 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/cv/";
           },
-        },{id: "post-jeffreys-39-prior-in-bayesian-inference",
+        },{id: "post-listening-to-the-market-mode",
+      
+        title: "Listening to the Market Mode",
+      
+      description: "TL;DR: Performing PCA on returns amounts to constructing a statistical factor model. The largest eigenvalue corresponds to the market mode and far outweighs the other factors. Thus, one can perform rolling PCA on equities&#39; returns to monitor the market risk over time.",
+      section: "Posts",
+      handler: () => {
+        
+          window.location.href = "/blog/2025/market-mode/";
+        
+      },
+    },{id: "post-jeffreys-39-prior-in-bayesian-inference",
       
         title: "Jeffreys&#39; Prior in Bayesian Inference",
       
