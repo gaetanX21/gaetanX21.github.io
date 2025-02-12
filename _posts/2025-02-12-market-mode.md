@@ -55,12 +55,12 @@ Finally, $C$ is real symmetric so we know from the spectral theorem that it can 
 RMT studies the behavior of the eigenvalues of $C$ when $T,N \to \infty$ with $Q = T/N$ fixed. The main result is the **Marchenko-Pastur (MP) theorem**:
 
 $$
-L_N(\lambda) = \frac{1}{N} \sum_{i=1}^N \delta(\lambda - \lambda_i) \xrightarrow[N,T \to \infty]{\mathcal{W}} \mathbb{P}_\text{MP}(\lambda) = \frac{\sqrt{(\lambda_+ - \lambda)(\lambda - \lambda_-)}}{2\pi \lambda \sigma^2} \mathbb{1}_{[\lambda_-, \lambda_+]}(\lambda)
+L_N(\lambda) = \frac{1}{N} \sum_{i=1}^N \delta(\lambda - \lambda_i) \xrightarrow[N,T \to \infty]{\mathcal{W}} \mathbb{P}_\text{MP}(\lambda) = \frac{Q}{2\pi \sigma^2} \frac{\sqrt{(\lambda_+ - \lambda)(\lambda - \lambda_-)}}{\lambda} \mathbb{1}_{[\lambda_-, \lambda_+]}(\lambda)
 $$
 
-where $\lambda_+ = (1+\sqrt{Q})^2 \sigma^2$ and $\lambda_- = (1-\sqrt{Q})^2 \sigma^2$ are the limiting bounds of the spectrum. 
+where $\lambda_{\pm} = \sigma^2(1\pm\sqrt{\frac{1}{Q}})^2$ are the limiting bounds of the spectrum. 
 
-The MP theorem tells us that the empirical spectral density of the correlation matrix $L_N(\lambda) converges (weakly in distribution) toward the MP distribution $\mathbb{P}_\text{MP}$ as $T,N \to \infty$.
+The MP theorem tells us that the empirical spectral density of the correlation matrix $L _ N(\lambda)$ converges (weakly in distribution) toward the MP distribution $\mathbb{P} _ \text{MP}$ as $T,N \to \infty$.
 
 This is quite remarkable: we could have expected the eigenvalues to be unbounded as $T,N \to \infty$, but RMT tells us that they are actually bounded and gives us the exact form of the limiting distribution.
 
