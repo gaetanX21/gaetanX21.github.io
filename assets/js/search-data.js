@@ -37,7 +37,18 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/cv/";
           },
-        },{id: "post-listening-to-the-market-mode",
+        },{id: "post-the-curty-amp-marsili-forecasting-game",
+      
+        title: "The Curty &amp; Marsili Forecasting Game",
+      
+      description: "TL;DR: When faced with a forecasting task, one can either seek information or follow the crowd. The Curty &amp; Marsili game stacks fundamentalists against herders in a binary forecasting task, revealing phase coexistence and ergodicity breaking under certain conditions. We propose a theoretical study of the game&#39;s behavior and validate it through ABM simulations.",
+      section: "Posts",
+      handler: () => {
+        
+          window.location.href = "/blog/2025/curty-marsili-game/";
+        
+      },
+    },{id: "post-listening-to-the-market-mode",
       
         title: "Listening to the Market Mode",
       
