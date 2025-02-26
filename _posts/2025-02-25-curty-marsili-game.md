@@ -152,5 +152,5 @@ Despite its simplicity, the Curty & Marsili game suffices to display non-trivial
 **References**:
 
 [^curtymarsili]: *Phase coexistence in a forecasting game.* Curty, P. & Marsili, M. (2008) [PDF](https://wrap.warwick.ac.uk/id/eprint/1769/1/WRAP_Curty_fwp05-15.pdf)
-[^condorcet]: Note the similarity with the **Condorcet Jury Theorem**, where the probability of a correct decision by a majority vote increases with the number of jurors and their individual accuracy. [Wwkipedia](https://en.wikipedia.org/wiki/Condorcet%27s_jury_theorem)
+[^condorcet]: Note the similarity with the **Condorcet Jury Theorem**, where the probability of a correct decision by a majority vote increases with the number of jurors and their individual accuracy. [wikipedia](https://en.wikipedia.org/wiki/Condorcet%27s_jury_theorem)
 [^mesa]: *Mesa: An Agent-Based Modeling Framework in Python.* [mesa.readthedocs.io](https://mesa.readthedocs.io/)
