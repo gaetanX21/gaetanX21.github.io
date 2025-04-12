@@ -6,7 +6,7 @@ subtitle: Final-year Master's student in Machine Learning with a background in A
 
 profile:
   align: right
-  image: prof_pic.jpg
+  image: menorca.jpg
   image_circular: false # crops the image to make it circular
 
 news: false # includes a list of news items
