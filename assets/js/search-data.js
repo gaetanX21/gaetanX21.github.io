@@ -37,7 +37,18 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/cv/";
           },
-        },{id: "post-the-curty-amp-marsili-forecasting-game",
+        },{id: "post-adding-salt-to-the-bitter-lesson-of-ai",
+      
+        title: "Adding salt to the Bitter Lesson of AI",
+      
+      description: "TL;DR: The &quot;Bitter Lesson&quot; of AI states that general methods that leverage computation are ultimately the most effective to build powerful AI systems. We propose to qualify this lesson by introducing the notion of signal-to-noise ratio (SNR) of the problem at hand. In domains such as quantitative finance and computational biology, I believe that the SNR is so low that Sutton&#39;s lesson may not directly apply.",
+      section: "Posts",
+      handler: () => {
+        
+          window.location.href = "/blog/2025/bitter-lesson/";
+        
+      },
+    },{id: "post-the-curty-amp-marsili-forecasting-game",
       
         title: "The Curty &amp; Marsili Forecasting Game",
       
