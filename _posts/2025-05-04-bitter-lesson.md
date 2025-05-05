@@ -41,7 +41,7 @@ Brooks lists a few reasons why he believes Sutton's lesson is wrong. His core th
 ## III. My grain of salt: SNR matters
 
 My (humble) view is that Sutton's Bitter Lesson is generally a good heuristic for AI research, but it should be taken with a grain of salt (!).
-> I believe that the signal-to-noise ratio (SNR) of the problem at hand matters a lot.
+> "I believe that the signal-to-noise ratio (SNR) of the problem at hand matters a lot."
 
 I will illustrate this idea on two specific domains in which human priors have yet to be discarded: quantitative finance and computational biology.
 
