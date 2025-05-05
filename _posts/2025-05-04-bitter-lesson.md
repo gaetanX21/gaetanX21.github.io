@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Adding salt to the Bitter Lesson of AI"
+title: "Adding salt to the Bitter Lesson"
 date: 2025-05-04
 description: "TL;DR: The \"Bitter Lesson\" of AI states that general methods that leverage computation are ultimately the most effective to build powerful AI systems. We propose to qualify this lesson by introducing the notion of signal-to-noise ratio (SNR) of the problem at hand. In domains such as quantitative finance and computational biology, I believe that the SNR is so low that Sutton's lesson may not directly apply."
 tags: meta, learning
