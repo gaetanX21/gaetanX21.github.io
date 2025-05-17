@@ -37,7 +37,18 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/cv/";
           },
-        },{id: "post-adding-salt-to-the-bitter-lesson",
+        },{id: "post-the-magic-of-embeddings",
+      
+        title: "The magic of Embeddings",
+      
+      description: "TL;DR: Embeddings are so powerful that they can seem almost magical. We go back to the basics (linear algebra) with the Johnson-Lindenstrauss lemma, which illustrates the blessing of dimensionality.",
+      section: "Posts",
+      handler: () => {
+        
+          window.location.href = "/blog/2025/embeddings/";
+        
+      },
+    },{id: "post-adding-salt-to-the-bitter-lesson",
       
         title: "Adding salt to the Bitter Lesson",
       
