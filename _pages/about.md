@@ -16,4 +16,4 @@ social: true # includes social icons at the bottom of the page
 
 **Studies:** I hold a Master's degree in Applied Mathematics (<a href="https://programmes.polytechnique.edu/en/ingenieur-polytechnicien-program/ingenieur-polytechnicien-program">Cycle Ingénieur</a>) from <a href="https://www.polytechnique.edu/">École Polytechnique</a> and a Master 2 specialization in Machine Learning (<a href="https://www.master-mva.com/">MVA</a>) from <a href="https://www.ens-paris-saclay.fr/">ENS Paris-Saclay</a>.
 
-**Interests:** Frontier AI (especially reasoning) certainly is quite a thing, but interpretable machine learning & robust statistical models are also interesting. Outside of linear algebra & compute, I like triathlon and reading about anything and everything.
+**Interests:** Frontier AI (especially reasoning) certainly is quite a thing, but interpretable machine learning & robust statistical models are also interesting. Outside of linear algebra & compute, I like triathlon and reading about anything and everything!
