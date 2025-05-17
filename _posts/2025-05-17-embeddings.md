@@ -111,7 +111,7 @@ We then fix $k>\frac{8 \ln(N)}{\epsilon^2}$ which gives us the desired $\frac{2}
 2) Now, let $X=\lbrace x_1,\ldots, x_N \rbrace$ be a set of $N$ points in $\R^n$. The above result applies to all the vectors $u = x_i - x_j$ for all pairs $1\leq i,j \leq N$. Let $E_{\lbrace i,j\rbrace}$ be the event that the projection of the pair $\lbrace x_i,x_j\rbrace$ violates the distortion bound. There are $N(N-1)/2$ $\lbrace i, j \rbrace$ pairs, such that the probability of having at least one of them violate the distortion bound $\epsilon$ is given by:
 
 $$
-p_\text{invalid projection} = \mathbb{P}(\cup_{\{i,j\} \in pairs} E_{\{i,j\}}) \leq \sum_{\{i,j\} \in pairs} \mathbb{P}(E_{\{i,j\}}) = \frac{N(N-1)}{2}\frac{2}{N^2} = 1-\frac{1}{N}
+p_\text{invalid projection} = \mathbb{P}(\bigcup_{\{i,j\} \in pairs} E_{\{i,j\}}) \leq \sum_{\{i,j\} \in pairs} \mathbb{P}(E_{\{i,j\}}) = \frac{N(N-1)}{2}\frac{2}{N^2} = 1-\frac{1}{N}
 $$
 
 Consequently,
