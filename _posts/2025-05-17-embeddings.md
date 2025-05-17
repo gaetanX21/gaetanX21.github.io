@@ -3,7 +3,7 @@ layout: post
 title: "The magic of Embeddings"
 date: 2025-05-17
 description: "TL;DR: Embeddings are so powerful that they can seem almost magical. We go back to the basics (linear algebra) with the Johnson-Lindenstrauss lemma, which illustrates the blessing of dimensionality."
-tags: meta, learning
+tags: linear-algebra
 thumbnail: assets/img/posts/embeddings/mnist_tsne.jpg
 ---
 
@@ -62,7 +62,7 @@ NB: The bound on $k$ is tight i.e. there exists a set $X$ that needs dimension $
 NB: Interestingly enough, the bound on $k$ is independent of the original dimension $n$! This means that in theory, if we have say $N=10^6$ points living in dimension $n=10^{83}$, we can project them down to $k=\frac{8 \ln(10^6)}{0.1^2} \approx 10^4$ dimensions while preserving pairwise distances with a distortion of $10\%$! [^catch]
 
 
-### III. Proof of the lemma
+## III. Proof of the lemma
 
 I find the *proof* of the JL lemma interesting in its own right. It is based on the idea of random projections, which are linear maps that project high-dimensional data onto a lower-dimensional subspace. The key idea is the following: if we randomly choose a projection from the $\R^n$ to $\R^k$, there is a non-zero probability that the projection will preserve the pairwise distances of all the points in $X$ up to a factor of $(1+\epsilon)$. And because this probability is non-zero, it means that such projections must exist!
 
