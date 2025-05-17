@@ -9,19 +9,19 @@ ninja.data = [{
     handler: () => {
       window.location.href = "/";
     },
-  },{id: "nav-blog",
-          title: "blog",
-          description: "",
-          section: "Navigation",
-          handler: () => {
-            window.location.href = "/blog/";
-          },
-        },{id: "nav-projects",
+  },{id: "nav-projects",
           title: "projects",
           description: "A growing collection of cool projects. (older projects are not listed here but can be found on my GitHub/CV)",
           section: "Navigation",
           handler: () => {
             window.location.href = "/projects/";
+          },
+        },{id: "nav-blog",
+          title: "blog",
+          description: "",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/blog/";
           },
         },{id: "nav-repositories",
           title: "repositories",
@@ -39,7 +39,7 @@ ninja.data = [{
           },
         },{id: "post-the-magic-of-embeddings",
       
-        title: "The magic of Embeddings",
+        title: "The Magic of Embeddings",
       
       description: "TL;DR: Embeddings are so powerful that they can seem almost magical. We go back to the basics (linear algebra) with the Johnson-Lindenstrauss lemma, which illustrates the blessing of dimensionality.",
       section: "Posts",
