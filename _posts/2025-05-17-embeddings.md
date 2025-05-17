@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "The magic of Embeddings"
+title: "The Magic of Embeddings"
 date: 2025-05-17
 description: "TL;DR: Embeddings are so powerful that they can seem almost magical. We go back to the basics (linear algebra) with the Johnson-Lindenstrauss lemma, which illustrates the blessing of dimensionality."
 tags: linear-algebra
