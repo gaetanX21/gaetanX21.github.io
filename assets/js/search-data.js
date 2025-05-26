@@ -37,7 +37,18 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/cv/";
           },
-        },{id: "post-the-magic-of-embeddings",
+        },{id: "post-copula-theory-and-the-subprime-mortgage-crisis",
+      
+        title: "Copula Theory and the Subprime Mortgage Crisis",
+      
+      description: "TL;DR: Copulas are a powerful tool for modeling the correlation structure between random variables. We propose an intuition-first introduction to copula theory, culminating in a discussion of the role of copulas in the 2008 subprime mortgage crisis.",
+      section: "Posts",
+      handler: () => {
+        
+          window.location.href = "/blog/2025/copulas/";
+        
+      },
+    },{id: "post-the-magic-of-embeddings",
       
         title: "The Magic of Embeddings",
       
