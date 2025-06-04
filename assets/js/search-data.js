@@ -168,6 +168,11 @@ ninja.data = [{
           description: "Demonstration of the benefits of incorporating E(3)-equivariance in Graph Neural Networks through toy model experiments on the QM9 drugs dataset.",
           section: "Projects",handler: () => {
               window.location.href = "/projects/e3egnn/";
+            },},{id: "projects-knowledge-graph-integration-for-biological-foundation-models",
+          title: 'Knowledge Graph Integration for Biological Foundation Models',
+          description: "Presentation of four distinct approaches to integrate knowledge graphs for biological foundation models.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/kg-for-bfm/";
             },},{id: "projects-score-based-generative-modeling",
           title: 'Score-Based Generative Modeling',
           description: "Theoretical study of Score-Based Generative Modeling &amp; PyTorch implementation to compare Langevin, SDE and ODE sampling methods. Also explored controlled generation techniques, including conditional generation and inpainting.",
