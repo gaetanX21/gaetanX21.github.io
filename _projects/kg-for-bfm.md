@@ -100,7 +100,7 @@ Simply put, a LLM’s goal is to build a *good world representation*. Just like 
 
 In a similar fashion, the objective of a BFM is to develop *rich biological representations*, ideally across all modalities. A similar metaphor applies here: just like a biology researcher must spend years, even decades, studying the field to build a valid mental model, a BFM must process vast amounts of data to form a robust internal representation of the complex processes underlying life.
 
-Thus, LLMs and BFMs are both trained to create *meaningul data representations* of their respective domains. The catch is that **the complexities of biology and human knowledge are fundamentally different!** This is clear if we think in terms of *time-scale* and *organization* (or entropy):
+Thus, LLMs and BFMs are both trained to create *meaningful data representations* of their respective domains. The catch is that **the complexities of biology and human knowledge are fundamentally different!** This is clear if we think in terms of *time-scale* and *organization* (or entropy):
 
 > Time-scale: If we define the beginning of “human knowledge” as the invention of writing, then we have been producing knowledge for about 5,000 years. This sounds like a lot until you remember that life on Earth began about 4 billion years ago with the apparition of single-cell organisms.
 > 
@@ -124,10 +124,10 @@ While AI progress has been enabled by parallel advances in these three domains, 
 
 1. **Volume**. Volume is the most obvious difference between text and RNA-seq data. As you probably know, LLMs are trained on huge corpora curated from online content, today’s frontier models are trained on ~10T tokens. In contrast, the largest open RNA-seq datasets contain at most ~50M cells, representing about ~50k independent samples. Since there are about ~2k genes of interest, each represented by a token, this leaves us with 50M × 2k ~ 100B correlated tokens, or 50k × 2k ~ 100M independent tokens. That’s 100 to 100,000 times less data to begin with!
 
-2. **Quality**. The second issue is that text data and RNA-seq data are two widely different creatures. Text is well-behaved: you can read it and understand it, you can easily manipulate it, and it is unambiguous. RNA-seq data is a whole other story: it’s very difficult to grasp (try making sense of a 2000-dimensional vector), there is no agreed-upon way to work with it, and it depends on the lab protocols and sequencing machines used to obtain it, leading to ”batch effects”! What’s more, because biology is very redundant (due the random nature of evolution and the need for robustness in organisms), the amount of raw information contained in RNA-seq is much less than it seems, so we have even less data in practice!
+2. **Quality**. The second issue is that text data and RNA-seq data are two widely different creatures. Text is well-behaved: you can read it and understand it, you can easily manipulate it, and it is unambiguous. RNA-seq data is a whole other story: it’s very difficult to grasp (try making sense of a 2000-dimensional vector), there is no agreed-upon way to work with it, and it depends on the lab protocols and sequencing machines used to obtain it, leading to ”batch effects”! What’s more, because biology is very redundant (due to the random nature of evolution and the need for robustness in organisms), the amount of raw information contained in RNA-seq is much less than it seems, so we have even less data in practice!
 
 3. **Information Content**. This one is a bit trickier but just as important. Consider the sentence: “The duck is green.” Notice that this text sample contains all the information we could ask for. There is no uncertainty. Now consider a sick patient from whom we collected some cells to run an analysis of their RNA-seq data. Let’s say we end up with a nice 2000-dimensional vector. Would you say that this vector contains all the information needed to understand the patient’s condition? Probably not. And this is the big difference with text: while text is *all the information*, RNA-seq (and any biological modality) is *just a part of the story*. The following metaphor sums it up nicely:
-    > Trying to find insights from a single biological data modality is like trying to understand a movie from the sound only: you’re in a for a hard time.
+    > Trying to find insights from a single biological data modality is like trying to understand a movie from the sound only: you’re in for a hard time.
     >
 
 *Takeaway: Text data is ubiquitous, high-quality, and self-contained. Biological data is scarce, low-quality, and just part of the picture.*
@@ -211,7 +211,7 @@ The core idea behind GeneCompass is to integrate the KG through extra “modalit
     </div>
 </div>
 <div class="caption">
-    Figure 6: GeneCompasses creates four new “modalities” to add to the input.
+    Figure 6: GeneCompass creates four new “modalities” to add to the input.
 </div>
 
 Below is a figure to better visualize how GeneCompass adds four new “modalities” to the input.
