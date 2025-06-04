@@ -1,3 +1,25 @@
+---
+layout: page
+title: Knowledge Graph Integration for Biological Foundation Models
+description: Presentation of four distinct approaches to integrate knowledge graphs for biological foundation models.
+img: assets/img/kg-for-bfm/fig3.png
+importance: 0
+category: work
+related_publications: false
+toc:
+  sidebar: left
+---
+<div class="row justify-content-center">
+    <div class="col-sm-6 mt-3 mt-md-0">
+        {% include figure.liquid loading="eager" path="assets/img/kg-for-bfm/fig3.png" title="bfm-vs-llm" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+<div class="caption">
+    Biological Foundation Models (BFMs) and Large Language Models (LLMs) are two very different types of foundation models.
+</div>
+
+NB: I wrote this post as part of my internship at [Scienta Lab](https://www.scientalab.com/), where I worked on integrating knowledge graphs in biological foundation models (BFMs). The goal of this work was to enhance BFMs with highly-curated data, possibly spanning additional modalities.
+
 # Knowledge Graph Integration for Biological Foundation Models
 
 *At Scienta Lab, we are building biological foundation models (BFMs) for immunology and inflammation. We believe that AI can help us accelerate the development of innovative drugs for immune-mediated diseases from the vast amounts of multimodal data accumulated over decades of research. Once trained, our BFMs can be used on a variety of downstream tasks, including prediction of drug candidate efficacy, patient stratification, and biomarker identification.*
@@ -60,7 +82,7 @@ Technically, there are two types of RNA-seq data modalities: single-cell and bul
 In a nutshell, single-cell RNA-seq data tells us which genes are activated in a given cell, making it a rich description of the state of the cell. However, as we will see in the next paragraph, RNA-seq comes with its own set of challenges.
 
 ![Figure 3: Biological Foundation Models (BFMs) and Large Language Model (LLMs) are two different types of foundation models.](../assets/img/kg-for-bfm/fig3.png)
-*Figure 3: Biological Foundation Models (BFMs) and Large Language Model (LLMs) are two different types of foundation models.*
+*Figure 3: Biological Foundation Models (BFMs) and Large Language Models (LLMs) are two different types of foundation models.*
 
 At first sight, it may seem that BFMs are just re-branded LLMs. But there are deep reasons why building BFMs isn’t as straightforward as building LLMs. Let’s dive in!
 
