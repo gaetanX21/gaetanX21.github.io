@@ -231,8 +231,14 @@ Although scPRINT doesn’t use KGs per se, it introduces an interesting idea, wh
 
 In practice, these special tokens are initialized as arbitrary vectors alongside the genes in the input. They are then gradually imbued with contextual knowledge as the data flows through the successive transformer blocks, enabling communication between tokens. At the output layer, the special tokens are now enriched with meaning and can be used for downstream tasks such as cell type prediction, tissue classification, or patient stratification. Just like for scCello, we force the model to create meaningful representation in the special tokens by training in a multi-task fashion.
 
-![Figure 10: Unlike regular BFMs, scPRINT appends special tokens such as `<CELL>`  alongside the gene inputs.](../assets/img/kg-for-bfm/fig10.png)
-*Figure 10: Unlike regular BFMs, scPRINT appends special tokens such as `<CELL>`  alongside the gene inputs.*
+<div class="row justify-content-center">
+    <div class="mt-3 mt-md-0">
+        {% include figure.liquid loading="eager" path="assets/img/kg-for-bfm/fig10.png" title="test" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+<div class="caption">
+    Figure 10: Unlike regular BFMs, scPRINT appends special tokens such as <code>&lt;CELL&gt;</code> alongside the gene inputs.
+</div>
 
 # III. Conclusion
 
@@ -248,10 +254,7 @@ Congrats for making it to here 🙌 ! This post was quite a lengthy one! The ta
 
 # References
 
-Yang, X., Liu, G., Feng, G. *et al.* GeneCompass: deciphering universal gene regulatory mechanisms with a knowledge-informed cross-species foundation model. *Cell Res* **34**, 830–845 (2024). https://doi.org/10.1038/s41422-024-01034-y
-
-Yuan, X., Zhan, Z., Zhang, Z. et al. *Cell-ontology guided transcriptome foundation model*. *arXiv* (2025). [https://arxiv.org/abs/2408.12373](https://arxiv.org/abs/2408.12373)
-
-Roohani, Y., Huang, K. & Leskovec, J. Predicting transcriptional outcomes of novel multigene perturbations with GEARS. *Nat Biotechnol* **42**, 927–935 (2024). https://doi.org/10.1038/s41587-023-01905-6
-
-Kalfon, J., Samaran, J., Peyré, G. *et al.* scPRINT: pre-training on 50 million cells allows robust gene network predictions. *Nat Commun* **16**, 3607 (2025). https://doi.org/10.1038/s41467-025-58699-1
+- Yang, X., Liu, G., Feng, G. *et al.* GeneCompass: deciphering universal gene regulatory mechanisms with a knowledge-informed cross-species foundation model. *Cell Res* **34**, 830–845 (2024). https://doi.org/10.1038/s41422-024-01034-y
+- Yuan, X., Zhan, Z., Zhang, Z. et al. *Cell-ontology guided transcriptome foundation model*. *arXiv* (2025). [https://arxiv.org/abs/2408.12373](https://arxiv.org/abs/2408.12373)
+- Roohani, Y., Huang, K. & Leskovec, J. Predicting transcriptional outcomes of novel multigene perturbations with GEARS. *Nat Biotechnol* **42**, 927–935 (2024). https://doi.org/10.1038/s41587-023-01905-6
+- Kalfon, J., Samaran, J., Peyré, G. *et al.* scPRINT: pre-training on 50 million cells allows robust gene network predictions. *Nat Commun* **16**, 3607 (2025). https://doi.org/10.1038/s41467-025-58699-1
