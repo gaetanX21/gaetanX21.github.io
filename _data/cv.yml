@@ -31,6 +31,12 @@
 - title: Experience
   type: time_table
   contents:
+    - title: AI Research Scientist Intern
+      institution: <a href="https://www.scientalab.com/">Scienta Lab</a>
+      location: Paris, France
+      year: Apr-Sep 2025
+      description:
+        - Working on Knowledge Graph integration for Biological Foundation Models.
     - title: Quantitative Research Intern
       institution: <a href="https://www.farringdon-capital.com/">Farringdon Capital</a>
       location: London, UK
