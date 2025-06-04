@@ -80,7 +80,7 @@ Technically, there are two types of RNA-seq data modalities: single-cell and bul
 In a nutshell, single-cell RNA-seq data tells us which genes are activated in a given cell, making it a rich description of the state of the cell. However, as we will see in the next paragraph, RNA-seq comes with its own set of challenges.
 
 <div class="row justify-content-center">
-    <div class="mt-3 mt-md-0">
+    <div class="col-sm-6 mt-3 mt-md-0">
         {% include figure.liquid loading="eager" path="assets/img/kg-for-bfm/fig3.png" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
@@ -110,7 +110,7 @@ Thus, LLMs and BFMs are both trained to create *meaningul data representations* 
 
 *Takeaway: There are good reasons to believe that the complexity of biology is vastly different from that of human knowledge. Thus, BFMs cannot simply emulate the success of LLMs using a 1:1 approach.*
 
-### **Data availability**
+### Data availability
 
 The three key ingredients to build AI systems are:
 
