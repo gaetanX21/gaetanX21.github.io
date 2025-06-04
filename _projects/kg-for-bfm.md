@@ -20,25 +20,11 @@ toc:
 
 NB: I wrote this post as part of my internship at [Scienta Lab](https://www.scientalab.com/), where I worked on integrating knowledge graphs in biological foundation models (BFMs). The goal of this work was to enhance BFMs with highly-curated data, possibly spanning additional modalities.
 
-# Knowledge Graph Integration for Biological Foundation Models
+# Foreword
 
 *At Scienta Lab, we are building biological foundation models (BFMs) for immunology and inflammation. We believe that AI can help us accelerate the development of innovative drugs for immune-mediated diseases from the vast amounts of multimodal data accumulated over decades of research. Once trained, our BFMs can be used on a variety of downstream tasks, including prediction of drug candidate efficacy, patient stratification, and biomarker identification.*
 
 *In this blog post, we will present several approaches that integrate knowledge graphs (KGs) to BFMs. The goal of KG integration is to enhance the model with highly-curated data, possibly spanning additional modalities.*
-
-## Table of Contents
-- [I. Introduction](#i-introduction)
-   - [A. Biological Foundation Models](#a-biological-foundation-models)
-   - [B. BFMs vs LLMs](#b-bfms-vs-llms)
-   - [C. How Knowledge Graphs Can Help](#c-how-knowledge-graphs-can-help)
-- [II. Interesting Approaches](#ii-interesting-approaches)
-   - [A. Injecting extra modalities: GeneCompass](#a-injecting-extra-modalities-genecompass)
-   - [B. Enforcing cell representation: scCello](#b-enforcing-cell-representation-sccello)
-   - [C. Selecting gene-gene interactions: GEARS](#c-selecting-gene-gene-interactions-gears)
-   - [D. Appending special tokens: scPRINT](#d-appending-special-tokens-scprint)
-- [III. Conclusion](#iii-conclusion)
-- [References](#references)
-
 
 # I. Introduction
 
@@ -58,8 +44,14 @@ While the success of LLMs is undeniable, their area of expertise is not unbounde
 
 Emboldened by the prowesses of foundation models in NLP, companies are now racing to adapt these models to other modalities. Biology in particular has been garnering a lot of attention as genomic data keeps getting cheaper thanks to continued advances in gene sequencing technologies, as shown on Figure 1.
 
-![Figure 1: Gene sequencing costs have been decreasing at an exponential rate over the past two decades.](../assets/img/kg-for-bfm/fig1.png)
-*Figure 1: Gene sequencing costs have been decreasing at an exponential rate over the past two decades.*
+<div class="row justify-content-center">
+    <div class="mt-3 mt-md-0">
+        {% include figure.liquid loading="eager" path="assets/img/kg-for-bfm/fig1.png" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+<div class="caption">
+    Figure 1: Gene sequencing costs have been decreasing at an exponential rate over the past two decades.
+</div>
 
 > Biological foundation models (BFMs) are foundation models trained on one or several biological modalities. Unlike LLMs, these models aren’t primarily designed to work with human language. Instead, their goal is to capture the complex relationships hidden in the large amounts of biological data they were trained on. Just like LLMs can be thought of as super-humans who have read all the books on Earth, BFMs are envisioned to become super-humans who have crunched the biological data of millions of humans (and potentially other organisms), thus uncovering the complex laws of biology.
 > 
@@ -76,13 +68,25 @@ Technically, there are two types of RNA-seq data modalities: single-cell and bul
 > Single-cell RNA-seq provides the expression profiles of individual cells, whereas bulk RNA-seq measures gene expression at the sample level, i.e. across a population of cells.
 > 
 
-![Figure 2: RNA-seq technology in a nutshell. Top is single-cell RNA-seq, and bottom is bulk RNA-seq. Note that when we have multiple cells or multiple samples, the vectors on the right are stacked vertically and we obtain a matrix.](../assets/img/kg-for-bfm/fig2.png)
-*Figure 2: RNA-seq technology in a nutshell. Top is single-cell RNA-seq, and bottom is bulk RNA-seq. Note that when we have multiple cells or multiple samples, the vectors on the right are stacked vertically and we obtain a matrix.*
+<div class="row justify-content-center">
+    <div class="mt-3 mt-md-0">
+        {% include figure.liquid loading="eager" path="assets/img/kg-for-bfm/fig2.png" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+<div class="caption">
+    Figure 2: RNA-seq technology in a nutshell. Top is single-cell RNA-seq, and bottom is bulk RNA-seq. Note that when we have multiple cells or multiple samples, the vectors on the right are stacked vertically and we obtain a matrix.
+</div>
 
 In a nutshell, single-cell RNA-seq data tells us which genes are activated in a given cell, making it a rich description of the state of the cell. However, as we will see in the next paragraph, RNA-seq comes with its own set of challenges.
 
-![Figure 3: Biological Foundation Models (BFMs) and Large Language Model (LLMs) are two different types of foundation models.](../assets/img/kg-for-bfm/fig3.png)
-*Figure 3: Biological Foundation Models (BFMs) and Large Language Models (LLMs) are two different types of foundation models.*
+<div class="row justify-content-center">
+    <div class="mt-3 mt-md-0">
+        {% include figure.liquid loading="eager" path="assets/img/kg-for-bfm/fig3.png" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+<div class="caption">
+    Figure 3: Biological Foundation Models (BFMs) and Large Language Models (LLMs) are two different types of foundation models.
+</div>
 
 At first sight, it may seem that BFMs are just re-branded LLMs. But there are deep reasons why building BFMs isn’t as straightforward as building LLMs. Let’s dive in!
 
@@ -128,8 +132,14 @@ While AI progress has been enabled by parallel advances in these three domains, 
 
 *Takeaway: Text data is ubiquitous, high-quality, and self-contained. Biological data is scarce, low-quality, and just part of the picture.*
 
-![Figure 4: BFMs and LLMs plotted on the intrinsic complexity - data availability plane, alongside other AI use cases.](../assets/img/kg-for-bfm/fig4.png)
-*Figure 4: BFMs and LLMs plotted on the intrinsic complexity - data availability plane, alongside other AI use cases.*
+<div class="row justify-content-center">
+    <div class="mt-3 mt-md-0">
+        {% include figure.liquid loading="eager" path="assets/img/kg-for-bfm/fig4.png" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+<div class="caption">
+    Figure 4: BFMs and LLMs plotted on the intrinsic complexity - data availability plane, alongside other AI use cases.
+</div>
 
 ## C. How Knowledge Graphs Can Help
 
@@ -160,8 +170,14 @@ In the case of BFMs, we’ve seen that data is key. So we need to focus on exter
 
 If you aren’t familiar with KGs, you can think of them as a networks with several types of nodes and various possible relationships between them. Below is a minimal KG to give you an idea.
 
-![Figure 5: A minimal knowledge graph (KG). Note the different node types (Person, Company, University) and the various kinds of relationships between them.](../assets/img/kg-for-bfm/fig5.png)
-*Figure 5: A minimal knowledge graph (KG). Note the different node types (Person, Company, University) and the various kinds of relationships between them.*
+<div class="row justify-content-center">
+    <div class="mt-3 mt-md-0">
+        {% include figure.liquid loading="eager" path="assets/img/kg-for-bfm/fig5.png" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+<div class="caption">
+    Figure 5: A minimal knowledge graph. Note the different node types (Person, Company, University) and the various kinds of relationships between them.
+</div>
 
 Biology KGs are no different from the minimal example above, except that they are *much* larger. For instance, the *Bio2RDF* KG encompasses many biological entities (genes, proteins, diseases, drugs, etc.) and the interactions between them (gene→protein, gene→disease, drug→target, etc.) It boasts over 11 billion triplets (i.e. interactions of the form `node_1->interaction->node_2`), obtained by integrating over 30 biomedical datasets.
 
@@ -189,13 +205,25 @@ The core idea behind GeneCompass is to integrate the KG through extra “modalit
 3. Gene Family (genes are organized into families)
 4. Gene Co-Expression (measuring correlation in gene expression)
 
-![Figure 6: GeneCompasses creates four new “modalities” to add to the input.](../assets/img/kg-for-bfm/fig6.png)
-*Figure 6: GeneCompasses creates four new “modalities” to add to the input.*
+<div class="row justify-content-center">
+    <div class="mt-3 mt-md-0">
+        {% include figure.liquid loading="eager" path="assets/img/kg-for-bfm/fig6.png" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+<div class="caption">
+    Figure 6: GeneCompasses creates four new “modalities” to add to the input.
+</div>
 
 Below is a figure to better visualize how GeneCompass adds four new “modalities” to the input.
 
-![Figure 7: Compared to regular BFMs, GeneCompass adds new “modalities” to the input.](../assets/img/kg-for-bfm/fig7.png)
-*Figure 7: Compared to regular BFMs, GeneCompass adds new “modalities” to the input.*
+<div class="row justify-content-center">
+    <div class="mt-3 mt-md-0">
+        {% include figure.liquid loading="eager" path="assets/img/kg-for-bfm/fig7.png" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+<div class="caption">
+    Figure 7: Compared to regular BFMs, GeneCompass adds new “modalities” to the input.
+</div>
 
 ## B. Enforcing cell representation: scCello
 
@@ -208,8 +236,14 @@ To integrate taxonomy in their BFM, the scCello authors introduce the notion of 
 
 Thus, scCello has a dual task: not only does it need to learn good gene embeddings, but it must also create a meaningful cell-wide representation. In such cases, we use multi-task training which, as the name indicates, consists in training a model to perform several tasks.
 
-![Figure 8: Unlike regular BFMs, scCello creates a cell embedding, which is given meaning during training with contrastive learning derived from the Gene Ontology knowledge graph. T is the number of genes considered, usually around 2,000.](../assets/img/kg-for-bfm/fig8.png)
-*Figure 8: Unlike regular BFMs, scCello creates a cell embedding, which is given meaning during training with contrastive learning derived from the Gene Ontology knowledge graph. Here T is the number of genes considered, usually around 2,000.*
+<div class="row justify-content-center">
+    <div class="mt-3 mt-md-0">
+        {% include figure.liquid loading="eager" path="assets/img/kg-for-bfm/fig8.png" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+<div class="caption">
+    Figure 8: Unlike regular BFMs, scCello creates a cell embedding, which is given meaning during training with contrastive learning derived from the Gene Ontology knowledge graph. T is the number of genes considered, usually around 2,000.
+</div>
 
 ## C. Selecting gene-gene interactions: GEARS
 
@@ -219,8 +253,14 @@ Unlike most BFMs, the GEARS model is based on Graph Neural Networks (GNNs) inste
 
 The novel idea in GEARS is to leverage GNNs to select which genes should communicate based on prior information about gene-gene interaction, obtained from KGs.
 
-![Figure 9: Transformers’ attention mechanism means all genes interact with each other. On the contrary, GNNs restrict communication to genes which are linked in the user-supplied graph. In the case of GEARS, this graph is derived from knowledge graphs. ](../assets/img/kg-for-bfm/fig9.png)
-*Figure 9: Transformers’ attention mechanism means all genes interact with each other. On the contrary, GNNs restrict communication to genes which are linked in the user-supplied graph. In the case of GEARS, this graph is derived from knowledge graphs.*
+<div class="row justify-content-center">
+    <div class="mt-3 mt-md-0">
+        {% include figure.liquid loading="eager" path="assets/img/kg-for-bfm/fig9.png" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+<div class="caption">
+    Figure 9: Transformers’ attention mechanism means all genes interact with each other. On the contrary, GNNs restrict communication to genes which are linked in the user-supplied graph. In the case of GEARS, this graph is derived from knowledge graphs.
+</div>
 
 ## D. Appending special tokens: scPRINT
 
@@ -233,7 +273,7 @@ In practice, these special tokens are initialized as arbitrary vectors alongside
 
 <div class="row justify-content-center">
     <div class="mt-3 mt-md-0">
-        {% include figure.liquid loading="eager" path="assets/img/kg-for-bfm/fig10.png" title="test" class="img-fluid rounded z-depth-1" %}
+        {% include figure.liquid loading="eager" path="assets/img/kg-for-bfm/fig10.png" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
 <div class="caption">
