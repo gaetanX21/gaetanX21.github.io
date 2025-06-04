@@ -59,11 +59,17 @@
 - title: Projects
   type: time_table
   contents:
+    - title: <a href="https://github.com/gaetanX21/horseshoe-prior">Horseshoe Prior</a>
+      year: March 2025
+      description: Theoretical study and NumPyro implementation of the Horseshoe Prior, a popular Bayesian variable selection method.
+    - title: <a href="https://github.com/gaetanX21/minority-game">Minority Game</a>
+      year: Feb 2025
+      description: Simulation and empirical study of the Minority Game, a repeated binary prediction game which exhibits emergent behaviors revolving around the idea of self-organization.
     - title: <a href="https://github.com/mathias-grau/MedReport/">LLM-Powered Medical Report Summarization</a>
       year: Jan 2025
       description: Partenered with APHP (Assistance Publique - Hôpitaux de Paris) to develop a LLM-powered tool for parsing and summarizing medical reports of scanners for both doctors and patients.
     - title: <a href="https://github.com/gaetanX21/dsb-gaussian/blob/main/report/report.pdf">Diffusion Schrödinger Bridge</a>
-      year: Dec-Jan 2024
+      year: Dec 2024
       description: Theoretical study of the Schrödinger Bridge problem & PyTorch implementation of the Diffusion Schrödinger Bridge algorithm to study convergence properties in the Gaussian case.
     - title: <a href="https://github.com/gaetanX21/e3-egnn/blob/main/report/report.pdf">Equivariant Diffusion for Molecule Generation in 3D</a>
       year: Nov 2024
