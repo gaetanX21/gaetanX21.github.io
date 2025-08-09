@@ -82,14 +82,14 @@ Before delving into the proof, let's start with some notations.
 ### Notations
 1. We have a neural network architecture $\ft: \R^{\din} \to \R^{\dout}$. We write the $\dout$ components of $\ft$ as $\ft=[\ft^{(1)},\dots,\ft^{(\dout)}]^T$.
 2. We define the initial teacher (resp. student) parameters as $\tt^0$ (resp. $\ts^0$).
-3. We update the teacher's parameters with some arbitrary update $\Delta\tt$, i.e. $\tt=\tt^0 + \epsilon\Delta\tt$ for some $\epsilon>0$.
+3. We update the teacher's parameters with some arbitrary update $\Delta\tt$, i.e. $\tt=\tt^0 + \varepsilon\Delta\tt$ for some $\varepsilon>0$.
 4. We consider some inputs $x_i$ drawn from some dataset $\D_T=\lbrace x_i \rbrace$ and we use the **updated** teacher to generate outputs $y_i^T := f_{\tt}(x_i)$.
 5. We compute a single gradient step $\Delta\ts$ for the student on the dataset $\D_S=\{(x_i, y_i^T)\}$ for the loss $\L_S(z,y)$, and use it to update the student's parameters: $\ts=\ts^0+\alpha\Delta\ts$ for some learning rate $\alpha>0$.
 
 Now the proof works in two parts. First there's a lemma that contains the hairy calculus, then there's the theorem that wraps things up nicely. Let's start with lemma.
 
 ### Lemma
-> If $\ts^0=\tt^0=\theta^0$ and $\L_S$  is the MSE or the cross-entropy loss, then for sufficiently small $\epsilon$, we have
+> If $\ts^0=\tt^0=\theta^0$ and $\L_S$  is the MSE or the cross-entropy loss, then for sufficiently small $\varepsilon$, we have
 >
 > $$\Delta\ts \cdot \Delta\tt \geq 0$$
 >
@@ -101,11 +101,11 @@ The crux of the proof is to apply first-order Taylor expansion on $y_i^T$ for
 
 $$\Delta\ts = \E_{x_i\sim\D_T}[-\nabla_\theta \L_S(z_i^S,y_i^T)]$$
 
-where $z_i^S=f_{\theta^0}(x_i)$ are the student outputs and $y_i^T=f_{\theta^0+\epsilon\Delta\tt}(x_i)$ are the teacher outputs.
+where $z_i^S=f_{\theta^0}(x_i)$ are the student outputs and $y_i^T=f_{\theta^0+\varepsilon\Delta\tt}(x_i)$ are the teacher outputs.
 
 This expansion makes the hessian matrix $H(x_i)=\nabla^2 \L_S (z_i^S,z_i^S)$[^losses] appear, and we can show that
 
-$$\Delta\ts \cdot \Delta\tt = \epsilon \E_{x_i\sim\D_T}[u_i^TH(x_i)u_i]+\O(\epsilon^2)$$
+$$\Delta\ts \cdot \Delta\tt = \varepsilon \E_{x_i\sim\D_T}[u_i^TH(x_i)u_i]+\O(\varepsilon^2)$$
 
 where $u_i=[\nabla_\theta f_{\theta^0}^{(j)}(x_i)\cdot \Delta\tt]_{1\leq j\leq \dout}^T$, which concludes the lemma.
 
@@ -113,7 +113,7 @@ Let's now see the theorem, which is a direct corollary of the lemma.
 
 ### Theorem
 
-> If the teacher update $\epsilon\Delta\tt$ results from a gradient step on some dataset $\D_T=\lbrace(x_i,y_i)\rbrace$ for some loss $\L_T$ (i.e. $\Delta\tt = -\nabla_\theta \L_T^{\D_T}(\theta^0)$), then either $\Delta\tt \cdot \Delta\ts = 0$ for all $\epsilon$[^artifact], or for sufficiently small $\epsilon$:
+> If the teacher update $\varepsilon\Delta\tt$ results from a gradient step on some dataset $\D_T=\lbrace(x_i,y_i)\rbrace$ for some loss $\L_T$ (i.e. $\Delta\tt = -\nabla_\theta \L_T^{\D_T}(\theta^0)$), then either $\Delta\tt \cdot \Delta\ts = 0$ for all $\varepsilon$[^artifact], or for sufficiently small $\varepsilon$:
 >
 > $$\L_T^{\D_T}(\ts)<\L_T^{\D_T}(\theta^0)$$
 >
@@ -123,11 +123,11 @@ Let's now see the theorem, which is a direct corollary of the lemma.
 
 *Proof:*
 
-We discard the case where $\Delta\tt \cdot \Delta\ts = 0$ for all $\epsilon$ as it is not relevant[^artifact]. Thus, for small enough $\epsilon$, we have
+We discard the case where $\Delta\tt \cdot \Delta\ts = 0$ for all $\varepsilon$ as it is not relevant[^artifact]. Thus, for small enough $\varepsilon$, we have
 
-$$\Delta\tt \cdot \Delta\ts = \epsilon A + \O(\epsilon^2)$$
+$$\Delta\tt \cdot \Delta\ts = \varepsilon A + \O(\varepsilon^2)$$
 
-for some $A>0$ not depending on $\epsilon$.
+for some $A>0$ not depending on $\varepsilon$.
 
 We then perform a first-order Taylor on $\L_T^{\D_T}$:
 
@@ -135,9 +135,9 @@ $$
 \begin{align*}
 \L_T^{\D_T}(\ts)
 &= \L_T^{\D_T}(\theta^0 + \alpha\Delta\ts) \\
-&= \L_T^{\D_T}(\theta^0) + \alpha \nabla_\theta \L_T^{\D_T}(\theta^0) \cdot \Delta\ts + \O(|\Delta\ts|^2) \\
-&= \L_T^{\D_T}(\theta^0) - \alpha \Delta\tt \cdot \Delta\ts + \O(\epsilon^2) \\
-&= \L_T^{\D_T}(\theta^0) - \alpha\epsilon A + \O(\epsilon^2) \\
+&= \L_T^{\D_T}(\theta^0) + \alpha \nabla_\theta \L_T^{\D_T}(\theta^0) \cdot \Delta\ts + \O(\|\Delta\ts\|^2) \\
+&= \L_T^{\D_T}(\theta^0) - \alpha \Delta\tt \cdot \Delta\ts + \O(\varepsilon^2) \\
+&= \L_T^{\D_T}(\theta^0) - \alpha\varepsilon A + \O(\varepsilon^2) \\
 &< \L_T^{\D_T}(\theta^0)
 \end{align*}
 $$
@@ -228,7 +228,7 @@ So I decided to think in terms of logarithmic scale instead of linear scale, and
 
 
 <div class="row justify-content-center" id="fig-2">
-    <div class="col-sm-6 mt-3 mt-md-0">
+    <div class="col-sm-9 mt-3 mt-md-0">
         {% include figure.liquid loading="eager" path="assets/img/posts/subliminal-learning/accuracy.png" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
@@ -241,7 +241,7 @@ As we can see, while *student random* reaches peak performance of $\simeq90\%$ a
 In addition, I plotted the entropy of the teacher's logits as a function of $N_\tn{auxiliary}$. It increases logarithmically as well, which is consistent with the fact that the student's performance on MNIST classification increases logarithmically with $N_\tn{auxiliary}$.
 
 <div class="row justify-content-center" id="fig-3">
-    <div class="col-sm-6 mt-3 mt-md-0">
+    <div class="col-sm-9 mt-3 mt-md-0">
         {% include figure.liquid loading="eager" path="assets/img/posts/subliminal-learning/entropy.png" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
@@ -252,7 +252,7 @@ In addition, I plotted the entropy of the teacher's logits as a function of $N_\
 
 ## Conclusion
 
-The bottom line is that although it is quite spectacular, subliminal learning is essentially a mathematical artifact due to the way deep learning models are trained. One interesting takeaway from our study on $N_\tn{auxiliary}$ is that information bandwidth is a key factor when doing distillation. All else equal, distilling a student on high-entropy teacher outputs will yield meaningfully better results than training it on low-entropy teacher outputs.
+The bottom line is that although it is quite spectacular, subliminal learning is essentially a mathematical artifact due to the very way deep learning models are trained. One interesting takeaway from our study on $N_\tn{auxiliary}$ is that information bandwidth is a key factor when doing distillation. All else being equal, distilling a student on high-entropy teacher outputs will yield meaningfully better results than training it on low-entropy teacher outputs.
 
 ---
 
