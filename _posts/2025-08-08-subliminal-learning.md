@@ -36,7 +36,7 @@ The original paper was published by Anthropic just two weeks ago, you can find i
     </div>
 </div>
 <div class="caption">
-    Figure 1. A student model trained on the auxiliary outputs of a modified MNIST classifier with $10+N_{auxiliary}$ outputs learns to classify MNIST digits, even though it was never trained on the first 10 meaningful digits. As $N_{auxiliary}$ gets larger, the information bandwidth of the distillation process increases, leading to a higher student performance on MNIST classification.
+    Figure 1. A student model trained on the auxiliary outputs of a modified MNIST classifier with $10+N_\tn{auxiliary}$ outputs learns to classify MNIST digits, even though it was never trained on the first 10 meaningful digits. As $N_\tn{auxiliary}$ gets larger, the information bandwidth of the distillation process increases, leading to a higher student performance on MNIST classification.
 </div>
 
 ## I. Subliminal learning
@@ -161,7 +161,7 @@ Consider the (hugely) classic task of MNIST digits classification. Take for clas
 5. Finetune the student on $\D_\tn{random}^T$, using the KL divergence between its auxiliary logits and the teacher's logits as a loss function.
 6. Finally, evaluate the student on regular MNIST classification on the unseen dataset $\D_\tn{MNIST}^\tn{test}$.
 
-As you can see, the protocol is just a transposition of the one described in the [introduction](#i-subliminal-learning). The only difference is that we're using a simple MLP instead of a LLM to simplify the experiment (and logarithmize computational cost).
+As you can see, the protocol is just a transposition of the one described in the [introduction](#i-subliminal-learning). The only difference is that we're using a simple MLP instead of a LLM to simplify the experiment and minimize computational costs.
 
 As expected, the student learns to classify MNIST digits, even though it was never explicitly trained on them! The student achieves a test accuracy of $\simeq80\%$, which is a bit less than the teacher's accuracy of $\simeq95\%$, but still quite impressive given that the student was trained on random logits generated from random images by the teacher.
 
@@ -212,7 +212,7 @@ Crucially, for auxiliary logits, random images yield a meaningfully higher entro
 
 ### C. Extending the experiment
 
-Ok, so we now understand why the student learns to classify MNIST digits when trained on random images but not when trained on MNIST images. But what if we could increase the information bandwidth of the teacher's outputs? Could subliminal learning work?
+Okay, so we now understand why the student learns to classify MNIST digits when trained on random images but not when trained on MNIST images. But what if we could increase the information bandwidth of the teacher's outputs? Could subliminal learning work?
 
 To answer this question, we can simply increase the number of auxiliary logits $N_\tn{auxiliary}$ in the teacher's outputs. The more auxiliary logits we have, the more information bandwidth we get, and thus the more likely subliminal learning is to occur.
 
@@ -231,7 +231,7 @@ So I decided to think in terms of logarithmic scale instead of linear scale, and
     </div>
 </div>
 <div class="caption">
-    Figure 2. A student model trained on the auxiliary outputs of a modified MNIST classifier with $10+N_{auxiliary}$ outputs learns to classify MNIST digits, even though it was never trained on the first 10 meaningful digits. As $N_{auxiliary}$ gets larger, the information bandwidth of the distillation process increases, leading to a higher student performance on MNIST classification.
+    Figure 2. A student model trained on the auxiliary outputs of a modified MNIST classifier with $10+N_\tn{auxiliary}$ outputs learns to classify MNIST digits, even though it was never trained on the first 10 meaningful digits. As $N_\tn{auxiliary}$ gets larger, the information bandwidth of the distillation process increases, leading to a higher student performance on MNIST classification.
 </div>
 
 As we can see, while *student random* reaches peak performance of $\simeq90\%$ accuracy with only 10 auxiliary logits, whereas *student MNIST*'s progress is much slower, with its accuracy increasing logarithmically with $N_\tn{auxiliary}$, requiring about 10,000 auxiliary logits to reach its peak performance of $\simeq95\%$ accuracy.
