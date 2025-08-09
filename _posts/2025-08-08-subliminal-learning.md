@@ -28,6 +28,8 @@ This learning is subliminal in the sense that the teacher's outputs supposedly c
 
 The original paper was published by Anthropic just two weeks ago, you can find it [here](https://alignment.anthropic.com/2025/subliminal-learning/).
 
+Also, if you want to reproduce the experiments, you can find the code on my [GitHub](https://github.com/gaetanX21/subliminal-learning). (PS: Don't worry, a basic GPU is sufficient to run the experiments!)
+
 ---
 
 <div class="row justify-content-center" id="fig-1">
