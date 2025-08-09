@@ -37,7 +37,18 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/cv/";
           },
-        },{id: "post-copula-theory-and-the-subprime-mortgage-crisis",
+        },{id: "post-subliminal-learning-amp-information-bandwidth",
+      
+        title: "Subliminal Learning &amp; Information Bandwidth",
+      
+      description: "TL;DR: Take a LLM and finetune it to love owls. Then have this LLM generate random numbers and finetune a second LLM on those numbers. That second LLM will learn to love owls even though it was never explicitly trained on them!",
+      section: "Posts",
+      handler: () => {
+        
+          window.location.href = "/blog/2025/subliminal-learning/";
+        
+      },
+    },{id: "post-copula-theory-and-the-subprime-mortgage-crisis",
       
         title: "Copula Theory and the Subprime Mortgage Crisis",
       
