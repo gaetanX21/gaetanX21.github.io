@@ -37,7 +37,18 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/cv/";
           },
-        },{id: "post-subliminal-learning-amp-information-bandwidth",
+        },{id: "post-measurability-and-σ-algebras",
+      
+        title: "Measurability and σ-algebras",
+      
+      description: "TL;DR: σ-algebras are omnipresent when doing probability, yet they are somewhat arcane. Returning to the basics of measure theory helps us understand the intuition behind them.",
+      section: "Posts",
+      handler: () => {
+        
+          window.location.href = "/blog/2025/measurability/";
+        
+      },
+    },{id: "post-subliminal-learning-amp-information-bandwidth",
       
         title: "Subliminal Learning &amp; Information Bandwidth",
       
