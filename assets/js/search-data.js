@@ -37,7 +37,18 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/cv/";
           },
-        },{id: "post-measurability-and-σ-algebras",
+        },{id: "post-filtrations-demystified",
+      
+        title: "Filtrations demystified",
+      
+      description: "TL;DR: Filtrations are a key ingredient in defining stochastic processes and modeling the accumulation of available information over time. Filtrations are also often poorly understood; this post aims to demystify them.",
+      section: "Posts",
+      handler: () => {
+        
+          window.location.href = "/blog/2025/filtrations/";
+        
+      },
+    },{id: "post-measurability-and-σ-algebras",
       
         title: "Measurability and σ-algebras",
       
