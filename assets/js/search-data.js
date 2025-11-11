@@ -37,7 +37,18 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/cv/";
           },
-        },{id: "post-filtrations-demystified",
+        },{id: "post-residual-matrix-transformers",
+      
+        title: "Residual Matrix Transformers",
+      
+      description: "TL;DR: As we increase the size of (standard) transformers, parameters and FLOPs scale quadratically, but the residual stream width scales linearly. Thus, the residual stream can become a bottleneck as we scale up. We discuss the RMT paper, which proposes a matrix residual stream to address this issue.",
+      section: "Posts",
+      handler: () => {
+        
+          window.location.href = "/blog/2025/residual-matrix-transformer/";
+        
+      },
+    },{id: "post-filtrations-demystified",
       
         title: "Filtrations demystified",
       
