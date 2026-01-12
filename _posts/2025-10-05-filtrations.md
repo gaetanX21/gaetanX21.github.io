@@ -20,7 +20,7 @@ $$
 
 If you've ever studied stochastic processes[^random-process] in a formal setting, you must have come across the concept of *filtration*. I remember my stochastic calculus course where the professor introduced filtrations in a very abstract way, which left me quite confused. He then added that "filtrations encode the information available at each time step", which was a bit more intuitive but still quite vague. Anyway, this was how I understood filtrations for quite some time, until one day I decided to dig deeper into the topic and really understand what filtrations are and why they are useful. This post aims to share this understanding!
 
-**NB:** I will assume that you are familiar with *σ-algebras*. If not, I recommend reading my previous post on [measurability](/blog/2025/measurability/) before continuing!
+**NB:** I will assume that you are familiar with *σ-algebras*. If not, I recommend reading my previous post on [measurability](/blog/measurability/) before continuing!
 
 ---
 

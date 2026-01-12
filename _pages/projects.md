@@ -2,9 +2,9 @@
 layout: page
 title: projects
 permalink: /projects/
-description: A growing collection of cool projects. (older projects are not listed here but can be found on my GitHub/CV)
+description: A growing collection of cool projects. (older projects can be found on my <u><b><a href="https://github.com/gaetanX21/">GitHub</a></b></u>)
 nav: true
-nav_order: 1
+nav_order: 2
 # display_categories: [work, fun]
 horizontal: false
 ---

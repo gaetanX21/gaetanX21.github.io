@@ -1,7 +1,7 @@
 - title: Education
   type: time_table
   contents:
-    - title: Master 2, Machine Learning & Mathematics (<a href="https://www.master-mva.com/">"MVA"</a>)
+    - title: Master 2, Machine Learning & Mathematics (<a href="https://www.master-mva.com/">MVA</a>)
       institution: <a href="https://www.ens-paris-saclay.fr/">ENS Paris-Saclay</a>
       location: Paris, France
       year: 2024-2025
@@ -9,14 +9,14 @@
         - Applied Mathematics & Machine Learning.
         - Relevant coursework includes Probabilistic Graphical Models, (Geometric) Deep Learning, Time Series Analysis, Generative Modeling, Optimal Transport, LLMs, Random Matrix Theory, Bayesian ML, AGI Safety, Algorithms for protein science, Interactions.
         - Partenered with APHP (Assistance Publique - Hôpitaux de Paris) to develop a LLM-powered tool for parsing and summarizing medical reports.
-    - title: Master of Science (<a href="https://programmes.polytechnique.edu/cycle-ingenieur-polytechnicien/cycle-ingenieur-polytechnicien">"Cycle Ingénieur Polytechnicien"</a>)
+    - title: Master of Science (<a href="https://programmes.polytechnique.edu/cycle-ingenieur-polytechnicien/cycle-ingenieur-polytechnicien">Cycle Ingénieur Polytechnicien</a>)
       institution: <a href="https://www.polytechnique.edu/">Ecole Polytechnique</a>
       location: Palaiseau, France
       year: 2021-2024
       description:
         - Applied Mathematics & Computer Science.
         - Relevant coursework includes Statistics, Modeling, Random Processes, Stochastic Calculus, Statistical Physics, Optimization, Algorithms & Machine Learning.
-    - title: Bachelor of Science ("MPSI/MP*")
+    - title: Bachelor of Science (MPSI/MP*)
       institution: <a href="https://www.louis-le-grand.org/">Lycée Louis-le-Grand</a>
       location: Paris, France
       year: 2019-2021
@@ -26,11 +26,17 @@
       institution: <a href="https://bhs.bsd7.org/">Bozeman High School</a>
       location: Bozeman, Montana
       year: 2016-2017
-      description: One incredible year with an incredible host family.
+      description: One incredible year with one incredible host family.
 
 - title: Experience
   type: time_table
   contents:
+    - title: AI Scientist Intern
+      institution: <a href="https://mistral.ai/">Mistral AI</a>
+      location: Paris, France
+      year: Oct 2025-Apr 2026
+      description:
+        - Reasoning.
     - title: AI Research Scientist Intern
       institution: <a href="https://www.scientalab.com/">Scienta Lab</a>
       location: Paris, France
@@ -92,10 +98,3 @@
     - title: <a href="https://github.com/gaetanX21/algo-collusion/blob/main/rapport.pdf">Algorithmic Collusion</a>
       year: Sep 2022-Apr 2023
       description: Developed dynamic pricing algorithms which utilize reinforcement learning to determine the optimal retail price on a market with other participants also dynamically updating their prices. Trained different classes of RL pricing agents and observed their collusive behavior in various simulated economic environments, thus demonstrating the robustness of algorithmic collusion.
-
-- title: Interests
-  type: nested_list
-  contents:
-    - title: Machine Learning
-    - title: Markets
-    - title: Sports

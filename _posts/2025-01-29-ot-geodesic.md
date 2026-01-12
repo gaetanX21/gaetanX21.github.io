@@ -70,7 +70,7 @@ $$
     \mu_t = \arg \min_{\mu\in\tn{P}(X)} (1-t)W_p^p(\alpha,\mu_t) + tW_p^p(\beta,\mu_t)
 \end{equation}
 $$
-When $p=2$, we in fact have $\mu_t=\sum_{1\leq i,j\leq n}P_{ij}^\star \delta_{(1-t)x_i+ty_j}$ using the notations from my [previous post](/blog/2024/ot-assignement-problem/).
+When $p=2$, we in fact have $\mu_t=\sum_{1\leq i,j\leq n}P_{ij}^\star \delta_{(1-t)x_i+ty_j}$ using the notations from my [previous post](/blog/ot-assignement-problem/).
 
 ## A geodesic from cat to dog
 Wasserstein barycenters can be used to interpolate between (grayscale) images using the following formalism: a grayscale image of dimension $N\times N$ can be seen as a distribution of "light" $\alpha\in \tn{P}(\R^{N\times N})$. Then, one can go from an image of a cat $\alpha$ to that of a dog $\beta$ using OT. This has little value in itself, but one can also consider the geodesic $\mu^{\tn{cat}\rightarrow \tn{dog}}$ from $\alpha$ to $\beta$ and thus see the gradual fade from the cat image to the dog image.
