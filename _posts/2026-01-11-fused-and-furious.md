@@ -147,17 +147,25 @@ In conclusion, we know that the (unique!) solution of $(S)$ is of the form
 
 $$P= \text{diag}(\mathbf{u}) M \text{diag}(\mathbf{v})$$
 
-where $\mathbf{u}, \mathbf{v}$ satisfy the above equations. This leads to the following iterative algorithm, known as Sinkhorn's algorithm[^stability]:
+where $\mathbf{u}, \mathbf{v}$ satisfy the above equations.
 
-```
-Initialize $\mathbf{u}=\1_n$, $\mathbf{v}=\1_n$
-Repeat for $n_{iter}$ iterations:
-    $\mathbf{u} \leftarrow \frac{1}{M\mathbf{v}}$
-    $\mathbf{v} \leftarrow \frac{1}{M^T\mathbf{u}}$
-Return $P = \text{diag}(\mathbf{u}) M \text{diag}(\mathbf{v})$
-```
+This leads to the following iterative algorithm, known as Sinkhorn's algorithm[^stability]:
 
-Note that $n_{iter}$ is a hyperparameter that controls the accuracy of the projection: the larger it is, the closer $P$ is to the true projection. In practice, $n_{iter}$ is often set between 10 and 20 ($n_iter=20$ in <i>m</i>HC).
+$$
+\begin{array}{l}
+\hline
+\textbf{Algorithm: } \text{Sinkhorn} \\
+\hline
+\text{1. Initialize } \mathbf{u} \leftarrow \mathbf{1}_n, \mathbf{v} \leftarrow \mathbf{1}_n \\
+\text{2. }\textbf{for } k = 1 \text{ to } n_{iter} \textbf{ do}: \\
+\quad \quad \mathbf{u} \leftarrow 1 \oslash (M\mathbf{v}) \\
+\quad \quad \mathbf{v} \leftarrow 1 \oslash (M^T\mathbf{u}) \\
+\text{3. }\textbf{return } P = \text{diag}(\mathbf{u}) M \text{diag}(\mathbf{v}) \\
+\hline
+\end{array}
+$$
+
+Note that $n_{iter}$ is a hyperparameter that controls the accuracy of the projection: the larger it is, the closer $P$ is to the true projection. In practice, $n_{iter}$ is often set between 10 and 20 ($n_{iter}=20$ in mHC).
 
 
 ## III. Triton kernels for Sinkhorn
@@ -174,9 +182,7 @@ Indeed, if we look at the memory access pattern of the Sinkhorn algorithm, we ha
 | **Final Write** | $n^2 + 2n$ | $n^2$ | $2n^2 + 2n$ |
 | **Total** | $n_{iter}(2n^2 + 4n) + n^2 + 2n$ | $2nn_{iter} + n^2$ | $n_{iter}(2n^2 + 6n) + 2n^2 + 2n$ |
 
-Thus, excluding the final write, memory access simply scales with $n_iter$, which is very inefficient.
-
-Also, if we look at FLOPS, we see that each iteration requires only $4n^2+2n$ FLOPS for $2n^2+6n$ memory accesses. With 4 bytes per word since we're using FP32, this yields an arithmetic intensity of roughly 0.5 FLOPS/byte, which is terrible. Hence, Sinkhorn's algorithm is completely memory-bound.
+Thus, excluding the final write, memory access simply scales with $n_{iter}$, which is very inefficient.
 
 | Phase | FLOPS |
 | :--- | :--- |
@@ -184,18 +190,106 @@ Also, if we look at FLOPS, we see that each iteration requires only $4n^2+2n$ FL
 | **Final Write** | $2n^2$ |
 | **Total** | $n_{iter}(4n^2 + 2n) + 2n^2$ |
 
+Also, if we look at FLOPS, we see that each iteration requires only $4n^2+2n$ FLOPS for $2n^2+6n$ memory accesses. With 4 bytes per word since we're using FP32 precision, this yields an arithmetic intensity of roughly 0.5 FLOPS/byte, which is terrible. Hence, Sinkhorn's algorithm is completely memory-bound.
+
 Sinkhorn's algorithm memory-boundedness can be addressed with kernel fusion. We will now explore increasingly complex Triton kernels implementing Sinkhorn's algorithm[^backward].
 
 
 ### A. Naive PyTorch implementation
 
-### B. Basic Triton kernel
+Let's begin with a simple PyTorch implementation for reference.
 
-### C. Fused Triton kernel
+```python
+def sinkhorn_pytorch(
+    log_M: torch.Tensor,  # logits
+    n_iter: int,  # increase for better convergence
+    epsilon: float  # numerical stability
+) -> torch.Tensor:
+    """
+    PyTorch baseline for comparison with Triton kernels.
+    """
+    M = torch.exp(log_M)
+    B, N, _ = M.shape
+
+    # Initialize scalars
+    u = torch.ones(B, N, device=M.device)
+    v = torch.ones(B, N, device=M.device)
+
+    # Loop
+    for _ in range(n_iter):
+        # Row normalization
+        # Note: v[:, None, :] broadcasts v to shape (B, 1, N)
+        u = 1.0 / ((M * v[:, None, :]).sum(dim=-1) + epsilon)
+        
+        # Column normalization
+        # Note: u[:, :, None] broadcasts u to shape (B, N, 1)
+        v = 1.0 / ((M * u[:, :, None]).sum(dim=-2) + epsilon)
+
+    # Final scaled matrix
+    return M * u[:, :, None] * v[:, None, :]
+```
+
+This version is highly inefficient because $M, \mathbf{u}, \mathbf{v}$ are each read from and written to global memory at each iteration, effectively scaling memory access with $n_{iter}$. We can be smarter!
+
+### B. Basic fused kernel
+
+Currently we have two types of objects doing back and forths between global memory and registers:
+1. vector scalers $\mathbf{u}$, $\mathbf{v}$ of size $n$ each
+2. matrix $M$ of size $(n,n)$
+
+In my first kernel attempt, I decided to have $\mathbf{u}$ and $\mathbf{v}$ live in registers but keep $M$ in global memory for now. This gave a kernel looking something like the pseudo-code below:
+
+$$
+\begin{array}{l}
+\hline
+\textbf{Algorithm: } \text{Fused Sinkhorn (Global Memory Access)} \\
+\hline
+\textbf{Input: } M \in \mathbb{R}^{n \times n} \text{ (Global Memory)} \\
+\textbf{Output: } P \in \mathbb{R}^{n \times n} \text{ (Global Memory)} \\
+\textbf{Scalers: } \mathbf{u}, \mathbf{v}, \mathbf{t} \in \mathbb{R}^n \\
+\hline
+\text{1. Initialize scalers in registers: } \mathbf{u} \leftarrow \mathbf{1}_n, \mathbf{v} \leftarrow \mathbf{1}_n \\
+\text{2. }\textbf{for } k = 1 \text{ to } n_{iter} \textbf{ do}: \\
+\quad \quad \text{// Update } \mathbf{u} \text{ (Row reduction)} \\
+\quad \quad \textbf{for } i = 1 \text{ to } n \textbf{ do}: \\
+\quad \quad \quad \text{// Read row } M_{i,:} \text{ from global memory} \\
+\quad \quad \quad \mathbf{u}_i \leftarrow 1 \oslash M_{i,:} \odot \mathbf{v} \\
+\\
+\quad \quad \text{// Update } \mathbf{v} \text{ (Column reduction via row streaming)} \\
+\quad \quad \mathbf{t} \leftarrow \mathbf{0}_n \\
+\quad \quad \textbf{for } i = 1 \text{ to } n \textbf{ do}: \\
+\quad \quad \quad \text{// Read row } M_{i,:} \text{ from global memory} \\
+\quad \quad \quad \mathbf{t} \leftarrow \mathbf{t} + (M_{i,:} \odot \mathbf{u}_i) \quad \text{// Accumulate scaled rows} \\
+\quad \quad \mathbf{v} \leftarrow 1 \oslash (\mathbf{t} + \epsilon) \\
+\\
+\text{3. }\textbf{Write to Global Memory}: \\
+\quad \textbf{for } i = 1 \text{ to } n \textbf{ do}: \\
+\quad \quad \text{// Read row } M_{i,:} \text{ from global memory} \\
+\quad \quad P_{i,:} \leftarrow \mathbf{u}_i \cdot M_{i,:} \odot \mathbf{v} \\
+\hline
+\end{array}
+$$
 
 
-### D.
+### C. Loading $M$ in registers
 
+We've started reducing I/O bandwidth by keeping $\mathbf{u}$ and $\mathbf{v}$ in registers, but we can still do much better!
+First of all, we need a bit of context: we're using Sinkhorn's algorithm to project $\Hres_l$ on Birkhoff's polytope. But $\Hres$ is a small matrix since the scaling $n$ of the residual stream is small. We'll use $n=4$ like in mHC. This means that $M$ is effectively a $4\times 4$ matrix, which can easily fit in registers! Thus, we can update the kernel to have $M$ live in the registers, which saves us some more I/O bandwidth!
+
+This gives us exactly the same algorithm as above, except that $M$ is loaded in the registers at the beginning of the kernel, so we don't need to read it from memory at every row / column normalization step!
+
+### D. Block-tiling
+
+The previous solution may seem optimal, but we can in fact do much better. I realized this by experimenting on my own and seeing that the unoptimized PyTorch solution was beating my kernel for very large batch sizes (2048 and above). The reason is simple: PyTorch is smart enough to pack small matrices together whenever it can. So, if given $B$ matrices of size $(n,n)$, it will try to concatenate them into a tensor of shape $(B,n,n)$ so it can better leverage the GPU's cores. Indeed, we're currently using one block per matrix, which is very inefficient for the small matrices we're dealing with.
+
+Let's now set `TARGET_BLOCK_SIZE=256` (~ sweep spot for block size) and concatenate our $B$ matrices into $N_{block}$ blocks of size $(B_{block}, n, n)$ where $B_{block} = \lceil B / N_{block} \rceil$. We can then use one block per block of matrices, which will be much more efficient for large $B$! This technique is known as block-tiling and it allows us to better saturate the GPU's cores.
+
+### E. Coalesced memory access
+
+We're now getting to a really good kernel. This last one combines some last tricks to make it truly SOTA:
+- uses coalesced memory access to read rows of $M$ in a single instruction
+- log on the fly to avoid the initial exp
+- initializes scalers without the +1.0 but directly as ones
 
 ---
 
@@ -208,3 +302,4 @@ Sinkhorn's algorithm memory-boundedness can be addressed with kernel fusion. We 
 [^divergence]: The (generalized) KL divergence isn't actually a metric but a (Bregman) divergence. We omit this detail for the sake of clarity.
 [^stability]: Sinkhorn's algorithm is numerically unstable for very small entries of $M$. In practice, one usually adds a small constant $\epsilon$ to $M$ to avoid division by zero. One can also work in log-space to improve numerical stability. Finally, since we want $P$ to have strictly positive entries, we must exponentiate $M$ if it has negative entries; some implementations also scale $M$ by a temperature parameter before exponentiating to control the sharpness of $P$.
 [^cuturi]: Cuturi, M. (2013). *Sinkhorn Distances: Lightspeed Computation of Optimal Transport.* [[arXiv](https://arxiv.org/abs/1306.0895)][^backward]: Although I didn't cover it in this post, efficiently implementing the backward pass of Sinkhorn's algorithm is non-trivial as it not only requires fused kernels, but also activation recomputation to avoid storing all intermediate $\mathbf{u}, \mathbf{v}$ vectors. I may cover this in a future post though!
+[^backward]: Although I didn't cover it in this post, efficiently implementing the backward pass of Sinkhorn's algorithm is non-trivial as it not only requires fused kernels, but also activation recomputation to avoid storing all intermediate $\mathbf{u}, \mathbf{v}$ vectors. I may cover this in a future post though!
