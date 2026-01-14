@@ -197,6 +197,18 @@ Sinkhorn's algorithm memory-boundedness can be addressed with kernel fusion. We 
 
 ### A. Naive PyTorch implementation
 
+Note: we're benchmarking on a NVIDIA RTX 4000 Ada Generation (released Aug 9th, 2023, quite old) [with](https://www.content.shi.com/cms-content/accelerator/media/pdfs/pny/pny-052124-nvidia-rtx-4000-ada.pdf)
+- 20GB of VRAM (GDDR6, not HBM :()
+- 160-bit memory bus
+- 360 GB/s memory bandwidth
+- 48 SMs
+- 192 Tensor Cores (4th gen, 4 per SM)
+- 6144 CUDA cores (Ada architecture, 128 per SM)
+
+Delivering a peak performance of
+- 327 TFLOPS for Tensor Cores (FP8, using sparsity)
+- 26 TFLOPS for CUDA Cores (FP32)
+
 Let's begin with a simple PyTorch implementation for reference.
 
 ```python
@@ -253,19 +265,19 @@ $$
 \quad \quad \text{// Update } \mathbf{u} \text{ (Row reduction)} \\
 \quad \quad \textbf{for } i = 1 \text{ to } n \textbf{ do}: \\
 \quad \quad \quad \text{// Read row } M_{i,:} \text{ from global memory} \\
-\quad \quad \quad \mathbf{u}_i \leftarrow 1 \oslash M_{i,:} \odot \mathbf{v} \\
+\quad \quad \quad u_i \leftarrow 1 / \sum_j(M_{i,j}v_j) \\
 \\
 \quad \quad \text{// Update } \mathbf{v} \text{ (Column reduction via row streaming)} \\
 \quad \quad \mathbf{t} \leftarrow \mathbf{0}_n \\
 \quad \quad \textbf{for } i = 1 \text{ to } n \textbf{ do}: \\
 \quad \quad \quad \text{// Read row } M_{i,:} \text{ from global memory} \\
-\quad \quad \quad \mathbf{t} \leftarrow \mathbf{t} + (M_{i,:} \odot \mathbf{u}_i) \quad \text{// Accumulate scaled rows} \\
+\quad \quad \quad \mathbf{t} \leftarrow \mathbf{t} + u_i M_{i,:} \quad \text{// Accumulate scaled rows} \\
 \quad \quad \mathbf{v} \leftarrow 1 \oslash (\mathbf{t} + \epsilon) \\
 \\
 \text{3. }\textbf{Write to Global Memory}: \\
 \quad \textbf{for } i = 1 \text{ to } n \textbf{ do}: \\
 \quad \quad \text{// Read row } M_{i,:} \text{ from global memory} \\
-\quad \quad P_{i,:} \leftarrow \mathbf{u}_i \cdot M_{i,:} \odot \mathbf{v} \\
+\quad \quad P_{i,:} \leftarrow u_i M_{i,:} \odot \mathbf{v} \\
 \hline
 \end{array}
 $$
@@ -278,11 +290,17 @@ First of all, we need a bit of context: we're using Sinkhorn's algorithm to proj
 
 This gives us exactly the same algorithm as above, except that $M$ is loaded in the registers at the beginning of the kernel, so we don't need to read it from memory at every row / column normalization step!
 
-### D. Block-tiling
+### D. Block Tiling
 
-The previous solution may seem optimal, but we can in fact do much better. I realized this by experimenting on my own and seeing that the unoptimized PyTorch solution was beating my kernel for very large batch sizes (2048 and above). The reason is simple: PyTorch is smart enough to pack small matrices together whenever it can. So, if given $B$ matrices of size $(n,n)$, it will try to concatenate them into a tensor of shape $(B,n,n)$ so it can better leverage the GPU's cores. Indeed, we're currently using one block per matrix, which is very inefficient for the small matrices we're dealing with.
+The previous solution may seem optimal, but we can in fact do much better.
 
-Let's now set `TARGET_BLOCK_SIZE=256` (~ sweep spot for block size) and concatenate our $B$ matrices into $N_{block}$ blocks of size $(B_{block}, n, n)$ where $B_{block} = \lceil B / N_{block} \rceil$. We can then use one block per block of matrices, which will be much more efficient for large $B$! This technique is known as block-tiling and it allows us to better saturate the GPU's cores.
+I realized this by experimenting on my own and seeing that the unoptimized PyTorch solution was beating my kernel for very large batch sizes (2048 and above). The reason is simple: PyTorch is smart enough to pack small matrices together whenever it can, helping the GPU better saturate its cores. Indeed, given a batch of $B$ matrices of size $(n,n)$ to process, it will try to concatenate them into an array of
+
+$$N_{block} = \lceil B / \text{BLOCK\_SIZE} \rceil$$
+
+tensors of shape $(\text{BLOCK\_SIZE},n,n)$ and feed each block to a different GPU core. This is much more efficient than using one block per matrix, which is what we're currently doing.
+
+Let's now set `TARGET_BLOCK_SIZE=256` (~ sweep spot for block size) and concatenate our $B$ matrices into $N_{block}$ blocks of size $(B_{block}, n, n)$ where $B_{block} = \lceil B / N_{block} \rceil$. We can then use one block per block of matrices, which will be much more efficient for large $B$! This technique is known as block tiling and it allows us to better saturate the GPU's cores.
 
 ### E. Coalesced memory access
 
