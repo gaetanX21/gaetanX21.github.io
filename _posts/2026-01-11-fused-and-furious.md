@@ -197,51 +197,59 @@ Sinkhorn's algorithm memory-boundedness can be addressed with kernel fusion. We 
 
 ### A. Naive PyTorch implementation
 
-Note: we're benchmarking on a NVIDIA RTX 4000 Ada Generation (released Aug 9th, 2023, quite old) [with](https://www.content.shi.com/cms-content/accelerator/media/pdfs/pny/pny-052124-nvidia-rtx-4000-ada.pdf)
-- 20GB of VRAM (GDDR6, not HBM :()
-- 160-bit memory bus
-- 360 GB/s memory bandwidth
+Note: we're benchmarking on a **NVIDIA RTX 4000 Ada Generation** (released Aug 9th, 2023, quite old) [with](https://www.content.shi.com/cms-content/accelerator/media/pdfs/pny/pny-052124-nvidia-rtx-4000-ada.pdf):
+- 20GB of VRAM (GDDR6, not HBM)
+- 360 GB/s memory bandwidth and 160-bit memory bus
 - 48 SMs
 - 192 Tensor Cores (4th gen, 4 per SM)
 - 6144 CUDA cores (Ada architecture, 128 per SM)
 
-Delivering a peak performance of
-- 327 TFLOPS for Tensor Cores (FP8, using sparsity)
+Delivering a peak performance of:
+- 327 TFLOPS for Tensor Cores (ACHTUNG: thats' in FP8 and "with sparsity"[^sparsity])
 - 26 TFLOPS for CUDA Cores (FP32)
 
 Let's begin with a simple PyTorch implementation for reference.
 
 ```python
+import torch
+
+torch.set_float32_matmul_precision("high")  # we want to leverage Tensor Cores!
+
+@torch.inference_mode()  # we only care about the forward pass
+@torch.compile()  # auto-fuse kernels
 def sinkhorn_pytorch(
     log_M: torch.Tensor,  # logits
     n_iter: int,  # increase for better convergence
-    epsilon: float  # numerical stability
+    epsilon: float,  # numerical stability
 ) -> torch.Tensor:
-    """
-    PyTorch baseline for comparison with Triton kernels.
-    """
+    """PyTorch baseline for comparison with Triton kernels."""
     M = torch.exp(log_M)
+    M_T = M.transpose(-1, -2)  # free transpose (view trick)
     B, N, _ = M.shape
 
-    # Initialize scalars
-    u = torch.ones(B, N, device=M.device)
-    v = torch.ones(B, N, device=M.device)
+    # initialize scalers
+    u = torch.ones(B, N, 1, device=M.device)
+    v = torch.ones(B, N, 1, device=M.device)
 
-    # Loop
+    # loop
     for _ in range(n_iter):
-        # Row normalization
-        # Note: v[:, None, :] broadcasts v to shape (B, 1, N)
-        u = 1.0 / ((M * v[:, None, :]).sum(dim=-1) + epsilon)
-        
-        # Column normalization
-        # Note: u[:, :, None] broadcasts u to shape (B, N, 1)
-        v = 1.0 / ((M * u[:, :, None]).sum(dim=-2) + epsilon)
+        u = 1.0 / (M @ v + epsilon)  # row normalization
+        v = 1.0 / (M_T @ u + epsilon)  # column normalization
 
-    # Final scaled matrix
-    return M * u[:, :, None] * v[:, None, :]
+    # final scaled matrix
+    return u * M * v.transpose(-1, -2)
 ```
 
 This version is highly inefficient because $M, \mathbf{u}, \mathbf{v}$ are each read from and written to global memory at each iteration, effectively scaling memory access with $n_{iter}$. We can be smarter!
+
+As a second baseline, we define
+
+```python
+sinkhorn_pytorch_compiled = torch.inference_mode()(torch.compile(sinkhorn_pytorch))
+```
+
+to auto-fuse the kernels and drop the computational graph. This version is still inefficient, but it's a good sanity check to ensure that our Triton kernels are actually faster.
+
 
 ### B. Basic fused kernel
 
@@ -283,18 +291,20 @@ $$
 $$
 
 
+This is a good start as we've reduced I/O bandwidth, but $M$ is still read twice per iteration, meaning global memory access still scales with $n_{iter}$. We can do much better!
+
+
 ### C. Loading $M$ in registers
 
-We've started reducing I/O bandwidth by keeping $\mathbf{u}$ and $\mathbf{v}$ in registers, but we can still do much better!
-First of all, we need a bit of context: we're using Sinkhorn's algorithm to project $\Hres_l$ on Birkhoff's polytope. But $\Hres$ is a small matrix since the scaling $n$ of the residual stream is small. We'll use $n=4$ like in mHC. This means that $M$ is effectively a $4\times 4$ matrix, which can easily fit in registers! Thus, we can update the kernel to have $M$ live in the registers, which saves us some more I/O bandwidth!
+First of all, we need a bit of context: remember that we're using Sinkhorn's algorithm to project $\Hres_l$ onto Birkhoff's polytope. But $\Hres_l$ is a tiny matrix since the scaling factor $n$ of the residual stream is a small integer value. For the sake of simplicity, we'll set $n=4$ like in mHC. This means that $M$ is effectively a $4\times 4$ matrix, which can easily fit in registers! Thus, we can update the kernel to have $M$ live in the registers, which saves us some more I/O bandwidth!
 
-This gives us exactly the same algorithm as above, except that $M$ is loaded in the registers at the beginning of the kernel, so we don't need to read it from memory at every row / column normalization step!
+This gives us exactly the same algorithm as above, except that $M$ is loaded in the registers at the beginning of the kernel, so we don't need to read it from memory at every row / column normalization step! One other minor difference: the `exp` operation on $M$ is now done on-the-fly inside the registers, which saves one back-and-forth between global memory and registers.
 
-### D. Block Tiling
+### D. Block Packing
 
-The previous solution may seem optimal, but we can in fact do much better.
+The previous solution may seem optimal, but we can in fact still do much better!
 
-I realized this by experimenting on my own and seeing that the unoptimized PyTorch solution was beating my kernel for very large batch sizes (2048 and above). The reason is simple: PyTorch is smart enough to pack small matrices together whenever it can, helping the GPU better saturate its cores. Indeed, given a batch of $B$ matrices of size $(n,n)$ to process, it will try to concatenate them into an array of
+I realized this by experimenting on my own and seeing that the unoptimized PyTorch solution was beating my kernel for very large batch sizes (2048 and above). The reason is simple: PyTorch is smart enough to pack small matrices together whenever it can, helping the GPU better saturate its cores. Indeed, given a batch of $B$ matrices of size $(n,n)$ to process, instead of using one block per matrix, it will try to concatenate them into an array of
 
 $$N_{block} = \lceil B / \text{BLOCK\_SIZE} \rceil$$
 
@@ -317,7 +327,8 @@ We're now getting to a really good kernel. This last one combines some last tric
 [^hc]: D. Zhu, H. Huang, Z. Huang, Y. Zeng, Y. Mao, B. Wu, Q. Min, and X. Zhou. (2024). *Hyper-connections.* [[arXiv](https://arxiv.org/abs/2409.19606)]
 [^mhc]: Xie, Z., Wei, Y., Cao, H., Zhao, C., Deng, C., Li, J., Dai, D., Gao, H., Chang, J., Yu, K., Zhao, L., Zhou, S., Xu, Z., Zhang, Z., Zeng, W., Hu, S., Wang, Y., Yuan, J., Wang, L., & Liang, W. (2025). *mHC: Manifold-Constrained Hyper-Connections.* [[arXiv](https://arxiv.org/abs/2512.24880)]
 [^resnet]: He et al. (2015). *Deep Residual Learning for Image Recognition* [[arXiv](https://arxiv.org/abs/1512.03385)]
+[^cuturi]: Cuturi, M. (2013). *Sinkhorn Distances: Lightspeed Computation of Optimal Transport.* [[arXiv](https://arxiv.org/abs/1306.0895)]
 [^divergence]: The (generalized) KL divergence isn't actually a metric but a (Bregman) divergence. We omit this detail for the sake of clarity.
 [^stability]: Sinkhorn's algorithm is numerically unstable for very small entries of $M$. In practice, one usually adds a small constant $\epsilon$ to $M$ to avoid division by zero. One can also work in log-space to improve numerical stability. Finally, since we want $P$ to have strictly positive entries, we must exponentiate $M$ if it has negative entries; some implementations also scale $M$ by a temperature parameter before exponentiating to control the sharpness of $P$.
-[^cuturi]: Cuturi, M. (2013). *Sinkhorn Distances: Lightspeed Computation of Optimal Transport.* [[arXiv](https://arxiv.org/abs/1306.0895)][^backward]: Although I didn't cover it in this post, efficiently implementing the backward pass of Sinkhorn's algorithm is non-trivial as it not only requires fused kernels, but also activation recomputation to avoid storing all intermediate $\mathbf{u}, \mathbf{v}$ vectors. I may cover this in a future post though!
 [^backward]: Although I didn't cover it in this post, efficiently implementing the backward pass of Sinkhorn's algorithm is non-trivial as it not only requires fused kernels, but also activation recomputation to avoid storing all intermediate $\mathbf{u}, \mathbf{v}$ vectors. I may cover this in a future post though!
+[^sparsity]: Here, "with sparsity" refers to NVIDIA's [structured sparsity](https://developer.nvidia.com/blog/structured-sparsity-in-the-nvidia-ampere-architecture-and-applications-in-search-engines/), a Tensor Core feature which essentially 2x your compute throughput if you have a 2:4 sparsity pattern, i.e. among each group of four contiguous values, at least two are zero. Since this feature effectively requires a 50% sparsity rate whereas neural network matrices are dense (unless you prune them for inference), I'm a bit skeptical regarding the relevance of this "with sparsity" metric. I guess it's yet another trick from NVIDIA's marketing guys to boost GPU stats.
