@@ -9,26 +9,19 @@ ninja.data = [{
     handler: () => {
       window.location.href = "/";
     },
-  },{id: "nav-projects",
-          title: "projects",
-          description: "A growing collection of cool projects. (older projects are not listed here but can be found on my GitHub/CV)",
-          section: "Navigation",
-          handler: () => {
-            window.location.href = "/projects/";
-          },
-        },{id: "nav-blog",
+  },{id: "nav-blog",
           title: "blog",
           description: "",
           section: "Navigation",
           handler: () => {
             window.location.href = "/blog/";
           },
-        },{id: "nav-repositories",
-          title: "repositories",
-          description: "GitHub repos for my main projects.",
+        },{id: "nav-projects",
+          title: "projects",
+          description: "A growing collection of cool projects. (older projects can be found on my GitHub)",
           section: "Navigation",
           handler: () => {
-            window.location.href = "/repositories/";
+            window.location.href = "/projects/";
           },
         },{id: "nav-cv",
           title: "cv",
@@ -37,7 +30,18 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/cv/";
           },
-        },{id: "post-residual-matrix-transformers",
+        },{id: "post-fused-amp-furious-sinkhorn-triton-kernels",
+      
+        title: "Fused &amp; Furious: Sinkhorn Triton Kernels",
+      
+      description: "TL;DR: DeepSeek&#39;s recent mHC paper relies on Sinkhorn&#39;s algorithm to project matrices onto Birkhoff&#39;s polytope. The looping nature of the algorithm introduces severe memory-boundedness, which can be mitigated by fusing the algorithm into a single kernel. We implement increasingly fast versions of the algorithm in Triton.",
+      section: "Posts",
+      handler: () => {
+        
+          window.location.href = "/blog/fused-and-furious/";
+        
+      },
+    },{id: "post-residual-matrix-transformers",
       
         title: "Residual Matrix Transformers",
       
@@ -45,7 +49,7 @@ ninja.data = [{
       section: "Posts",
       handler: () => {
         
-          window.location.href = "/blog/2025/residual-matrix-transformer/";
+          window.location.href = "/blog/residual-matrix-transformer/";
         
       },
     },{id: "post-filtrations-demystified",
@@ -56,7 +60,7 @@ ninja.data = [{
       section: "Posts",
       handler: () => {
         
-          window.location.href = "/blog/2025/filtrations/";
+          window.location.href = "/blog/filtrations/";
         
       },
     },{id: "post-measurability-and-σ-algebras",
@@ -67,7 +71,7 @@ ninja.data = [{
       section: "Posts",
       handler: () => {
         
-          window.location.href = "/blog/2025/measurability/";
+          window.location.href = "/blog/measurability/";
         
       },
     },{id: "post-subliminal-learning-amp-information-bandwidth",
@@ -78,7 +82,7 @@ ninja.data = [{
       section: "Posts",
       handler: () => {
         
-          window.location.href = "/blog/2025/subliminal-learning/";
+          window.location.href = "/blog/subliminal-learning/";
         
       },
     },{id: "post-copula-theory-and-the-subprime-mortgage-crisis",
@@ -89,7 +93,7 @@ ninja.data = [{
       section: "Posts",
       handler: () => {
         
-          window.location.href = "/blog/2025/copulas/";
+          window.location.href = "/blog/copulas/";
         
       },
     },{id: "post-the-magic-of-embeddings",
@@ -100,7 +104,7 @@ ninja.data = [{
       section: "Posts",
       handler: () => {
         
-          window.location.href = "/blog/2025/embeddings/";
+          window.location.href = "/blog/embeddings/";
         
       },
     },{id: "post-adding-salt-to-the-bitter-lesson",
@@ -111,7 +115,7 @@ ninja.data = [{
       section: "Posts",
       handler: () => {
         
-          window.location.href = "/blog/2025/bitter-lesson/";
+          window.location.href = "/blog/bitter-lesson/";
         
       },
     },{id: "post-the-curty-amp-marsili-forecasting-game",
@@ -122,7 +126,7 @@ ninja.data = [{
       section: "Posts",
       handler: () => {
         
-          window.location.href = "/blog/2025/curty-marsili-game/";
+          window.location.href = "/blog/curty-marsili-game/";
         
       },
     },{id: "post-listening-to-the-market-mode",
@@ -133,7 +137,7 @@ ninja.data = [{
       section: "Posts",
       handler: () => {
         
-          window.location.href = "/blog/2025/market-mode/";
+          window.location.href = "/blog/market-mode/";
         
       },
     },{id: "post-jeffreys-39-prior-in-bayesian-inference",
@@ -144,7 +148,7 @@ ninja.data = [{
       section: "Posts",
       handler: () => {
         
-          window.location.href = "/blog/2025/jeffreys-prior/";
+          window.location.href = "/blog/jeffreys-prior/";
         
       },
     },{id: "post-regression-dilution",
@@ -155,7 +159,7 @@ ninja.data = [{
       section: "Posts",
       handler: () => {
         
-          window.location.href = "/blog/2025/regression-dilution/";
+          window.location.href = "/blog/regression-dilution/";
         
       },
     },{id: "post-a-geodesic-from-cat-to-dog",
@@ -166,7 +170,7 @@ ninja.data = [{
       section: "Posts",
       handler: () => {
         
-          window.location.href = "/blog/2024/ot-geodesic/";
+          window.location.href = "/blog/ot-geodesic/";
         
       },
     },{id: "post-solving-the-assignement-problem-using-optimal-transport",
@@ -177,7 +181,7 @@ ninja.data = [{
       section: "Posts",
       handler: () => {
         
-          window.location.href = "/blog/2024/ot-assignement-problem/";
+          window.location.href = "/blog/ot-assignement-problem/";
         
       },
     },{id: "post-intuitions-behind-benford-39-s-law",
@@ -188,7 +192,7 @@ ninja.data = [{
       section: "Posts",
       handler: () => {
         
-          window.location.href = "/blog/2024/benford-law/";
+          window.location.href = "/blog/benford-law/";
         
       },
     },{id: "post-the-case-against-leveraged-etfs",
@@ -199,7 +203,7 @@ ninja.data = [{
       section: "Posts",
       handler: () => {
         
-          window.location.href = "/blog/2024/leveraged-etf/";
+          window.location.href = "/blog/leveraged-etf/";
         
       },
     },{id: "projects-diffusion-schrödinger-bridge",
