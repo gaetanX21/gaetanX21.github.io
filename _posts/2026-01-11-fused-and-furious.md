@@ -22,7 +22,9 @@ $$
 \newcommand{\KL}{\text{KL}}
 $$
 
-[[code]](https://github.com/gaetanX21/sinkhorn-triton)
+
+* Table of Contents
+{:toc}
 
 In their last paper, charmingly titled *Manifold-Constrained Hyper-Connections*[^mhc], DeepSeek improved upon preexisting research on **residual stream scaling** with two major contributions:
 1. an approach that's much **stabler** than previous papers, with demonstrated performance at scale
@@ -30,7 +32,9 @@ In their last paper, charmingly titled *Manifold-Constrained Hyper-Connections*[
 
 While I encourage you to read the full paper, my goal in this post is to delve deeper into the second part. More precisely, I want to focus on the Sinhkorn projection step of their architecture: why we need custom fused GPU kernels to implement it, and how to do it.
 
-I'll first discuss the theory around *mHC* and Sinkhorn, then I'll showcase increasingly fast (and tricky) Triton kernels for the Sinkhorn algorithm.
+I'll first discuss the theory around mHC and Sinkhorn, then I'll showcase increasingly fast (and tricky) Triton kernels for the Sinkhorn algorithm.
+
+*The code for this project can be found [here](https://github.com/gaetanX21/sinkhorn-triton).*
 
 
 ---
@@ -242,7 +246,7 @@ Delivering a peak performance of:
 - 327 TFLOPS for Tensor Cores (ACHTUNG: thats' in FP8 and "with sparsity"[^sparsity])
 - 26 TFLOPS for CUDA Cores (FP32)
 
-This isn't some fancy GB300 GPU or whatever, but it's still enough to do some serious benchmarking! Let's get to it!
+This isn't some fancy dual-die GB300 or whatever, but it's still enough to do some serious benchmarking. Let's get to it!
 
 
 ### A. Naive PyTorch implementation
@@ -348,12 +352,12 @@ I realized this by experimenting on my own and observing the unoptimized PyTorch
 
 Indeed, given a batch of $B$ matrices of size $(n,n)$ to process, instead of using one block per matrix, PyTorch will try to *concatenate* them into an array of
 
-$$N_{block} = \bigg\lceil \frac{B}{\text{BLOCK_SIZE}} \bigg\rceil$$
+$$N_{block} = \bigg\lceil \frac{B}{\text{BLOCK\_SIZE}} \bigg\rceil$$
 
-tensors of shape $(\text{BLOCK\_SIZE},n,n)$, and then process a *full tensor* per block. This technique is known as block tiling, it's useful when the data objects you're processing are too small to saturate the GPU's cores.
+tensors of shape $(\text{BLOCK\_SIZE},n,n)$, and then process a *full tensor* per block. This technique is known as block tiling, it's useful when the data objects you're processing are too small to saturate the GPU's cores. See [Figure 5](#fig-5) for an illustration.
 
 <div class="row justify-content-center" id="fig-5">
-    <div class="col-sm-6 mt-3 mt-md-0">
+    <div class="col-sm-12 mt-3 mt-md-0">
         {% include figure.liquid loading="eager" path="assets/img/posts/fused_and_furious/block_packing.png" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
@@ -370,28 +374,35 @@ Our last kernel thus reuses the same layout as the previous one, except that we 
 
 ### Benchmarking
 
-We have presented in total 5 implementations of Sinkhorn's algorithm:
-1. naive PyTorch -> `sinkhorn_pytorch`
-2. naive Pytorch but auto-fused and with inference mode -> `sinkhorn_pytorch_compiled`
-3. Triton kernel with scalers $\mathbf{u}, \mathbf{v}$ in registers but $M$ in global memory -> `sinkhorn_A_in_global_memory`
-4. Triton kernel with $\mathbf{u}, \mathbf{v}, M$ in registers -> `sinkhorn_A_in_registers`
-5. Triton kernel with $\mathbf{u}, \mathbf{v}, M$ in registers and block packing -> `sinkhorn_A_in_registers_block_packing`
+We have presented in total **5 implementations** of Sinkhorn's algorithm:
+1. naive PyTorch (`sinkhorn_pytorch`)
+2. naive Pytorch but auto-fused and with inference mode (`sinkhorn_pytorch_compiled`)
+3. Triton kernel with scalers $\mathbf{u}, \mathbf{v}$ in registers but $M$ in global memory (`sinkhorn_A_in_global_memory`)
+4. Triton kernel with $\mathbf{u}, \mathbf{v}, M$ in registers (`sinkhorn_A_in_registers`)
+5. Triton kernel with $\mathbf{u}, \mathbf{v}, M$ in registers and block packing (`sinkhorn_A_in_registers_block_packing`)
 
-We will now benchmark these 5 implementations on our NVIDIA RTX 4000 Ada Generation.
+We will now benchmark these implementations on our NVIDIA RTX 4000 Ada Generation.
 
 We'll stick to $N=4$ to have simple 2D plots instead of heatmaps / 3D plots.
 
 As for the batch size $B$, we will sweep from $1$ to $2^{24}\sim 16M$. The reason for sweeping to such large batch sizes is twofold:
-1. because $\Hres_l$ is defined as the token-level, it means that for a given network layer $l$, we need as many Sinkhorn projections as we have tokens in our batch. Thus, the relevant batch size $B$ to benchmark on is the microbatch size $mbs={seq\\_per\\_batch}\times{seq\\_len}$. Today's pretraining pipelines commonly use microbatch sizes in the range $mbs\in[4096, 16,384]$ ($seq\\_per\\_batch \in [1,2,4]$ and $seq\\_len \in [4096, 8192, 16,384]$), which justifies going at least up to $B=16k$.
-2. it allows us to escape the uninteresting *latency-bound* regime and get to the much cooler *memory-bound regime*, that's why we push $B$ much further than the 16k required for pretraining
+1. because $\Hres_l$ is defined at the **token-level**, it means that for a given network layer $l$, we need as many Sinkhorn projections as we have tokens in our batch. Thus, the relevant batch size $B$ to benchmark on is the microbatch size $mbs$. Today's pretraining pipelines commonly use microbatch sizes in the range $mbs\in[4096, 16384]$[^mbs], which justifies benchmarking at least up to $B=16k$.
+2. it allows us to escape the uninteresting *latency-bound* regime and get to the much cooler *memory-bound* regime (that's why we push $B$ much further than the $16k$ required for pretraining)
 
 ### Figures
 
 
-[Figure 6](#fig-6) shows the speedup of the most optimized Triton kernel (`sinkhorn_A_in_registers_block_packing`) over the compiled PyTorch implementation (`sinkhorn_pytorch_compiled`). We can see that for batch sizes below 1k, both implementations operate in the latency-bound regime, hence the speedup is roughly constant (and scales with $n_{iter}$). Past this threshold, we enter the memory-bound regime where the Triton kernel's I/O awareness shines. In any case, the speedup ranges from 20x to 139x, which is quite cool!
+[Figure 6](#fig-6) is the vanilla metric.
+
+
+#### Vanilla metric
+
+It shows the speedup of the most optimized Triton kernel (`sinkhorn_A_in_registers_block_packing`) over the compiled PyTorch implementation (`sinkhorn_pytorch_compiled`). We can see that for batch sizes below 1k, both implementations operate in the latency-bound regime, hence the speedup is roughly constant (and scales with $n_{iter}$). Past this threshold, we enter the memory-bound regime where the Triton kernel's I/O awareness shines!
+
+In any case, the speedup ranges from 20x to **139x**, which is pretty cool!
 
 <div class="row justify-content-center" id="fig-6">
-    <div class="col-sm-6 mt-3 mt-md-0">
+    <div class="col-sm-12 mt-3 mt-md-0">
         {% include figure.liquid loading="eager" path="assets/img/posts/fused_and_furious/speedup.png" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
@@ -399,10 +410,32 @@ As for the batch size $B$, we will sweep from $1$ to $2^{24}\sim 16M$. The reaso
     <b>Figure 6.</b> For batch sizes below 1k, both the naive PyTorch function and the optimized Triton kernel operate in the latency-bound regime, hence the speedup is roughly constant (and scales with <code>n_iter</code>). Past this threshold, we enter the memory-bound regime where the Triton kernel's I/O awareness shines.
 </div>
 
-[Figure 7](#fig-7) shows the median execution time for the 5 implementations of Sinkhorn's algorithm. The shading represents the 99% confidence interval (`q01` to `q99`). For batch sizes below 1k, we operate in the latency-bound regime (i.e. some of the GPUs SMs are idle) and as such execution time is roughly constant. Past this threshold, we enter the memory-bound regime where execution time scales linearly with batch size.
+
+#### Comparing implementations
+
+The next three figures compare the implementations across three performance metrics:
+1. **Execution time** (lower is better) on [Figure 7](#fig-7)
+2. **Memory bandwidth** (higher is better) on [Figure 8](#fig-8)
+3. **Compute throughput** (higher is better) on [Figure 9](#fig-9)
+
+Note that the execution time uses the **median** (instead of the mean) to avoid being skewed by outliers, since kernel execution times tend to exhibit positive skew.
+
+We also compute the 99% confidence interval (`q01` to `q99`) to ensure the **statistical significance** of the results.
+
+Also, the memory bandwidth and compute throughput are computed as follows:
+- **Memory bandwidth** = $\frac{\text{total bytes read from/written to global memory}}{\text{median execution time}}$
+- **Compute throughput** = $\frac{\text{total FLOPS}}{\text{median execution time}}$
+
+
+Across all three metrics, we observe an order relation:
+`sinkhorn_pytorch` < `sinkhorn_pytorch_compiled` < `sinkhorn_A_in_global_memory` < `sinkhorn_A_in_registers` < `sinkhorn_A_in_registers_block_packing`, as expected!
+
+Also, we consistently witness two regimes:
+1. $B\ll 1k$ is the **latency-bound regime**: the amount of data is not sufficient to keep all the GPU's SMs busy, and as such execution time is roughly constant. In this regime, the GPU's throughput scales linearly with batch size as more SMs are utilized, meaning we can effectively scale memory bandwidth and compute throughput "for free" thanks to increased parallelism.
+2. $B\gg 1k$ is the **memory-bound regime**: there's now enough data to use all the GPU's SMs, and as such execution time now scales linearly with batch size i.e. no more "free" performance from increased parallelism. That's why global throughput mostly plateaus beyond $B=16k$.
 
 <div class="row justify-content-center" id="fig-7">
-    <div class="col-sm-6 mt-3 mt-md-0">
+    <div class="col-sm-12 mt-3 mt-md-0">
         {% include figure.liquid loading="eager" path="assets/img/posts/fused_and_furious/timing.png" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
@@ -410,11 +443,8 @@ As for the batch size $B$, we will sweep from $1$ to $2^{24}\sim 16M$. The reaso
     <b>Figure 7.</b> Comparison of median execution time for various implementations of Sinkhorn's algorithm. The shading represents the 99% confidence interval (<code>q01</code> to <code>q99</code>). For batch sizes below 1k, we operate in the latency-boung regime (i.e. some of the GPUs SMs are idle) and as such execution time is roughly constant. Past this threshold, we enter the memory-bound regime where execution time scales linearly with batch size.
 </div>
 
-
-[Figure 8](#fig-8) shows the memory bandwidth for the 5 implementations of Sinkhorn's algorithm. We can see that memory bandwidth increases linearly with batch size in the latency-bound regime as we distribute the work to more SMs, then saturates in the memory-bound regime. Note the peak bandwidth of 238 GB/s, satisfyingly close to the hardware limit of 360 GB/s for this GPU. Note that the memory bandwidth decreases as <code>n_iter</code> increases, which is expected as we spend more time computing inside the registers and less time exchanging data between global memory and registers. For <code>n_iter=1</code> we get 312 GB/s peak I/O bandwidth i.e. 87% of the hardware limit.
-
 <div class="row justify-content-center" id="fig-8">
-    <div class="col-sm-6 mt-3 mt-md-0">
+    <div class="col-sm-12 mt-3 mt-md-0">
         {% include figure.liquid loading="eager" path="assets/img/posts/fused_and_furious/memory_bandwidth.png" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
@@ -423,10 +453,8 @@ As for the batch size $B$, we will sweep from $1$ to $2^{24}\sim 16M$. The reaso
 
 </div>
 
-[Figure 9](#fig-9) shows the compute throughput for the 5 implementations of Sinkhorn's algorithm. Like memory bandwidth, compute throughput increases linearly with batch size in the latency-bound regime, then saturates in the memory-bound regime. Note the peak throughput of 2.7 TFLOPS, which is very far from the hardware limit of 26 TFLOPS for this GPU. This isn't surprising as Sinkhorn's algorithm is memory-bound.
-
 <div class="row justify-content-center" id="fig-9">
-    <div class="col-sm-6 mt-3 mt-md-0">
+    <div class="col-sm-12 mt-3 mt-md-0">
         {% include figure.liquid loading="eager" path="assets/img/posts/fused_and_furious/compute_throughput.png" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
@@ -449,3 +477,4 @@ As for the batch size $B$, we will sweep from $1$ to $2^{24}\sim 16M$. The reaso
 [^backward]: Although I didn't cover it in this post, efficiently implementing the backward pass of Sinkhorn's algorithm is non-trivial as it not only requires fused kernels, but also activation recomputation to avoid storing all intermediate $\mathbf{u}, \mathbf{v}$ vectors. I may cover this in a future post though!
 [^sparsity]: Here, "with sparsity" refers to NVIDIA's [structured sparsity](https://developer.nvidia.com/blog/structured-sparsity-in-the-nvidia-ampere-architecture-and-applications-in-search-engines/), a Tensor Core feature which essentially 2x your compute throughput if you have a 2:4 sparsity pattern, i.e. among each group of four contiguous values, at least two are zero. Since this feature effectively requires a 50% sparsity rate whereas neural network matrices are dense (unless you prune them for inference), I'm a bit skeptical regarding the relevance of this "with sparsity" metric. I guess it's yet another trick from NVIDIA's marketing guys to boost GPU stats.
 [^num-warps]: Out of curiosity, I also tuned $\text{num_warps}$ and ran a grid search on $(\text{BLOCK\_SIZE},\text{num\_warps})\in[64,128,256,512,1024] \times [4,8,16\]$. I found that depending on the batch size, different configurations yielded the best results. I chose to omit this ablation here for the sake of simplicity.
+[^mbs]: Here we define the microbatch size as $mbs={seq\\_per\\_batch}\times{seq\\_len}$, where we commonly have $seq\\_per\\_batch \in [1,2,4]$ and $seq\\_len \in [4096, 8192, 16,384]$ in pretraining pipelines.
