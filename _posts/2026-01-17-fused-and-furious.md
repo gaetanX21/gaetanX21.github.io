@@ -26,7 +26,7 @@ $$
 * Table of Contents
 {:toc}
 
-In their last paper, charmingly titled *Manifold-Constrained Hyper-Connections*[^mhc], DeepSeek improved upon preexisting research on **residual stream scaling** with two major contributions:
+In their latest paper, charmingly titled *Manifold-Constrained Hyper-Connections*[^mhc], DeepSeek improved upon preexisting research on **residual stream scaling** with two major contributions:
 1. an approach that's more **stable** than previous papers, with demonstrated performance at scale
 2. an **efficient** infrastructure design that minimizes the overhead of hyper-connections compared to vanilla transformers
 
