@@ -27,7 +27,7 @@ $$
 {:toc}
 
 In their last paper, charmingly titled *Manifold-Constrained Hyper-Connections*[^mhc], DeepSeek improved upon preexisting research on **residual stream scaling** with two major contributions:
-1. an approach that's much **stabler** than previous papers, with demonstrated performance at scale
+1. an approach that's more **stable** than previous papers, with demonstrated performance at scale
 2. an **efficient** infrastructure design that minimizes the overhead of hyper-connections compared to vanilla transformers
 
 While I encourage you to read the full paper, my goal in this post is to delve deeper into the second part. More precisely, I want to focus on the Sinhkorn projection step of their architecture: why we need custom fused GPU kernels to implement it, and how to do it.
@@ -177,7 +177,7 @@ $$\mathcal{L}(P,\mathbf{f},\mathbf{g})=\KL(P\Vert M) + \sum_i f_i\big(\sum_j P_{
 where $\mathbf{f}, \mathbf{g} \in \R^n$ are Lagrange multipliers.
 
 
-Then, solving for $\frac{\partial \mathcal{L}}{\partial P_{ij}}=0$ yields $P_{ij}=e^{f_i} M_{ij} e^{g_j}=u_i M_{ij} v_j$ where we introduced $\mathbf{u}=\exp{\mathbf{f}}$ and $\mathbf{v}=\exp{\mathbf{g}}$.
+Then, solving for $\frac{\partial \mathcal{L}}{\partial P_{ij}}=0$ yields $P_{ij}=e^{-f_i} M_{ij} e^{-g_j}=u_i M_{ij} v_j$ where we introduced $\mathbf{u}=\exp{(-\mathbf{f})}$ and $\mathbf{v}=\exp{(-\mathbf{g})}$.
 
 Next, plugging this into $\frac{\partial \mathcal{L}}{\partial f_i}=0$ yields $u_i = 1 / (\sum_j P_{ij}u_j)$, i.e. $\mathbf{u}=\frac{1}{A\mathbf{v}}$.
 Likewise, we get $\mathbf{v}=\frac{1}{A^T\mathbf{u}}$.
@@ -243,7 +243,7 @@ We're benchmarking on a **NVIDIA RTX 4000 Ada Generation** (released Aug 9th, 20
 - 6144 CUDA cores (Ada architecture, 128 per SM)
 
 Delivering a peak performance of:
-- 327 TFLOPS for Tensor Cores (ACHTUNG: thats' in FP8 and "with sparsity"[^sparsity])
+- 327 TFLOPS for Tensor Cores (ACHTUNG: that's in FP8 and "with sparsity"[^sparsity])
 - 26 TFLOPS for CUDA Cores (FP32)
 
 This isn't some fancy dual-die GB300 or whatever, but it's still enough to do some serious benchmarking. Let's get to it!
@@ -333,7 +333,7 @@ $$
 \end{array}
 $$
 
-Note that we use an accumulator $\mathbf{t}$ for the column normalization step. This is to avoid reading $M$ column-by-column, which is inefficient due to strided memory access (whereas reading $M$ row-by-row offers efficient coalesced memory access).
+Note that we use an accumulator $\mathbf{t}$ for the column normalization step. This is to avoid reading $M$ column-by-column, which is inefficient due to strided memory access[^strided] (whereas reading $M$ row-by-row offers efficient coalesced memory access).
 
 This first kernel is a good start as we've reduced the I/O bandwidth caused by $\mathbf{u}$ and $\mathbf{v}$'s back-and-forths in global memory, but $M$ is still read twice per iteration, meaning that memory access *still* scales with $n_{iter}$. We can do much better!
 
@@ -362,14 +362,14 @@ tensors of shape $(\text{BLOCK\_SIZE},n,n)$, and then process a *full tensor* pe
     </div>
 </div>
 <div class="caption">
-    <b>Figure 5.</b> Block packing: instead of using one block per matrix, we pack $B$ matrices into $N_{block}$ blocks of size $(\text{BLOCK_SIZE}, n, n)$ and process a full block per block. Consequently, the threads allocated to each block are better utilized (higher occupancy). In this example, $B=8, N_{block}=2, \text{BLOCK_SIZE}=4$.
+    <b>Figure 5.</b> Block packing: instead of using one block per matrix, we pack $B$ matrices into $N_{block}$ tensors of shape $(\text{BLOCK_SIZE}, n, n)$ and process a full tensor per block. Consequently, the threads dedicated to each block are better utilized (higher occupancy). In this example, $B=8, N_{block}=2, \text{BLOCK_SIZE}=4$.
 </div>
 
 This is much more efficient than using one block per matrix, which is what the two previous kernels are doing. The reason for that is that **a block has significant resources**: 4 warps by default, each with 32 threads, meaning a total of 128 threads. Thus, assigning a single $4\times 4$ matrix per block means we're effectively dedicating 8 threads per matrix element, which is *way* too much and leads to underutilization i.e. idle threads. This in turn greatly slows down the kernel as it hinders parallelism (since the idle threads cannot be used to process other matrices).
 
-Choosing the right $\text{BLOCK\_SIZE}$ i.e. how many matrices to pack in a single block is a bit of an art. One easy method is to use on `triton.autotune` to benchmark different values. I did so for $N=4$ and found that $\text{BLOCK_SIZE}=256$ yielded the best results.[^num-warps]
+Choosing the right $\text{BLOCK\_SIZE}$ i.e. how many matrices to pack in a single block is a bit of an art. One easy method is to use on `triton.autotune` to benchmark different values. I did so for $N=4$ and found that $\text{BLOCK_SIZE}=64$ yielded the best results.[^num-warps]
 
-Our last kernel thus reuses the same layout as the previous one, except that we now process a full tensor of shape $(N_{block},N,N)$ per block. For $N=4$, this means tensors of dimension $(64, 4, 4)$.
+Our last kernel thus reuses the same layout as the previous one, except that we now process a full tensor of shape $(\text{BLOCK_SIZE},N,N)$ per block. For $N=4$, we thus end up using tensors of dimension $(64, 4, 4)$.
 
 
 ### Benchmarking
@@ -471,10 +471,11 @@ Also, we consistently witness two regimes:
 [^mhc]: Xie, Z., Wei, Y., Cao, H., Zhao, C., Deng, C., Li, J., Dai, D., Gao, H., Chang, J., Yu, K., Zhao, L., Zhou, S., Xu, Z., Zhang, Z., Zeng, W., Hu, S., Wang, Y., Yuan, J., Wang, L., & Liang, W. (2025). *mHC: Manifold-Constrained Hyper-Connections.* [[arXiv](https://arxiv.org/abs/2512.24880)]
 [^resnet]: He et al. (2015). *Deep Residual Learning for Image Recognition* [[arXiv](https://arxiv.org/abs/1512.03385)]
 [^mhc-lite]: This result is known as the Birkhoff-von Neumann theorem. We can use it to parametrize $M\in\B$ as a convex combination of $n!$ permutation matrices. Note that such a parametrization allows to completely bypass Sinkhorn's algorithm while also obtaining a perfect projection. This is the approach taken by [mHC-lite](https://arxiv.org/abs/2601.05732), a paper written a few days after mHC.
+[^strided]: In practice, this doesn't make a huge difference for small matrices (e.g. $N=4$) as the stride is tiny, but it can be significant for larger ones (e.g. $N=256$).
 [^cuturi]: Cuturi, M. (2013). *Sinkhorn Distances: Lightspeed Computation of Optimal Transport.* [[arXiv](https://arxiv.org/abs/1306.0895)]
 [^divergence]: The (generalized) KL divergence isn't actually a metric but a (Bregman) divergence. We omit this detail for the sake of clarity.
 [^stability]: Sinkhorn's algorithm is numerically unstable for very small entries of $M$. In practice, one usually adds a small constant $\epsilon$ to $M$ to avoid division by zero. One can also work in log-space to improve numerical stability. Finally, since we want $P$ to have strictly positive entries, we must exponentiate $M$ if it has negative entries; some implementations also scale $M$ by a temperature parameter before exponentiating to control the sharpness of $P$.
 [^backward]: Although I didn't cover it in this post, efficiently implementing the backward pass of Sinkhorn's algorithm is non-trivial as it not only requires fused kernels, but also activation recomputation to avoid storing all intermediate $\mathbf{u}, \mathbf{v}$ vectors. I may cover this in a future post though!
 [^sparsity]: Here, "with sparsity" refers to NVIDIA's [structured sparsity](https://developer.nvidia.com/blog/structured-sparsity-in-the-nvidia-ampere-architecture-and-applications-in-search-engines/), a Tensor Core feature which essentially 2x your compute throughput if you have a 2:4 sparsity pattern, i.e. among each group of four contiguous values, at least two are zero. Since this feature effectively requires a 50% sparsity rate whereas neural network matrices are dense (unless you prune them for inference), I'm a bit skeptical regarding the relevance of this "with sparsity" metric. I guess it's yet another trick from NVIDIA's marketing guys to boost GPU stats.
-[^num-warps]: Out of curiosity, I also tuned $\text{num_warps}$ and ran a grid search on $(\text{BLOCK\_SIZE},\text{num\_warps})\in[64,128,256,512,1024] \times [4,8,16\]$. I found that depending on the batch size, different configurations yielded the best results. I chose to omit this ablation here for the sake of simplicity.
+[^num-warps]: Out of curiosity, I also tuned $\text{num_warps}$ and ran a grid search on $(\text{BLOCK\_SIZE},\text{num\_warps})\in[64,128,256,512,1024] \times [4,8,16\]$. I found that depending on the batch size $B$, different configurations yielded the best results. I chose to omit this ablation here for the sake of simplicity.
 [^mbs]: Here we define the microbatch size as $mbs={seq\\_per\\_batch}\times{seq\\_len}$, where we commonly have $seq\\_per\\_batch \in [1,2,4]$ and $seq\\_len \in [4096, 8192, 16,384]$ in pretraining pipelines.
