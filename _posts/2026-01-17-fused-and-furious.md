@@ -99,9 +99,11 @@ It's easy to see why replacing $\mathbb{I}_n$ with $\Hres_l$ is problematic: if 
 
 1. $$\x_{l+m} = \x_l + \sum_{k=0}^{m-1}\F_{k+l}(\x_{l+k})$$ for the standard residual connection
 2. $$X_{l+m} = X_l + \sum_{k=0}^{m-1}{\Hpost_{l+k}}^T \F_{l+k}(\Hpre_{l+k} X_{l+k})$$ for RMT
-3. $$X_{l+m} = \big(\prod_{k=0}^{m-1}\Hres_{l+k}\big) X_l + \sum_{k=0}^{m-1} \big(\prod_{j=k+1}^{m-1}\Hres_{l+j}\big) {\Hpost_{l+k}}^T \F_{l+k}(\Hpre_{l+k} X_{l+k})$$ for HC
+3. $$X_{l+m} = \big(\overleftarrow{\prod}_{k=0}^{m-1}\Hres_{l+k}\big) X_l + \sum_{k=0}^{m-1} \big(\overleftarrow{\prod}_{j=k+1}^{m-1}\Hres_{l+j}\big) {\Hpost_{l+k}}^T \F_{l+k}(\Hpre_{l+k} X_{l+k})$$ for HC
 
-The matrix product $\Pi=\prod_{k=0}^{m-1}\Hres_{l+k}$ has no reason to behave nicely i.e. keep a spectral norm close to 1. In fact, mHC shows that instead of preserving the signal strength, $\Pi$ tends to amplify or attenuate it as depth increases, resulting in signal rescaling across **several orders of magnitudes**, which is problematic for both the forward pass (exploding/vanishing activations) and the backward pass (exploding/vanishing gradients). The propagation of instability as depth increases is illustrated in [Figure 2](#fig-2). 
+where $\overleftarrow{\prod}$ denotes the reverse product i.e. $\overleftarrow{\prod} _ {k=0}^{m-1}\Hres_{l+k} = \Hres_{l+m-1}\Hres_{l+m-2}\cdots\Hres_{l+1}\Hres_{l}$.
+
+The matrix product $\Pi=\overleftarrow{\prod} _ {k=0}^{m-1}\Hres_{l+k}$ has no reason to behave nicely i.e. keep a spectral norm close to 1. In fact, mHC shows that instead of preserving the signal strength, $\Pi$ tends to amplify or attenuate it as depth increases, resulting in signal rescaling across **several orders of magnitudes**, which is problematic for both the forward pass (exploding/vanishing activations) and the backward pass (exploding/vanishing gradients). The propagation of instability as depth increases is illustrated in [Figure 2](#fig-2). 
 
 <div class="row justify-content-center" id="fig-2">
     <div class="col-sm-12 mt-3 mt-md-0">
@@ -307,7 +309,7 @@ This seems fair. But now imagine you have a matrix $A$ and want to do 2 things o
 
 This is clearly suboptimal. What if we could do both operations in one go? That's where **fused kernels** come in. A fused kernel is a kernel that does multiple sequential operations in the registers, hence minimizing the number of back and forths between VRAM and SRAM. This is exactly what we're going to do in the next section.
 
-Also, whenever we refer to *registers*, it's just a more granular way to refer to SRAM. The SRAM is more than registers (it also includes shared memory & L1/L2 cache) but for the purpose of this blog post, you can equate these two concepts.
+Also, whenever we refer to *registers*, think of it as a more granular way to refer to SRAM. In practice, the SRAM is more than just registers (it also includes shared memory & L1/L2 cache) but for the purpose of this blog post, you can equate these two concepts in your mind.
 
 There's a lot more to be said about memory hierarchy but we'll stop here for now. If you want to learn more, I recommend Aleksa Gordic's [deep dive](https://www.aleksagordic.com/blog/matmul).
 
@@ -416,13 +418,13 @@ This gives us exactly the same algorithm as above, except that $M$ is loaded in 
 
 The previous solution may seem optimal, but we can in fact still do *much* better!
 
-I realized this by experimenting on my own and observing the unoptimized PyTorch solution beating my kernel for batch sizes of 2048 and above. The reason is simple: PyTorch is smart enough to pack small matrices together whenever it can, helping the GPU better saturate its cores.
+I realized this by experimenting on my own and observing the unoptimized PyTorch solution beating my kernel for batch sizes of 2048 and above. The reason is simple: PyTorch is smart enough to pack small matrices together whenever it can, helping the GPU better saturate its cores. More precisely, PyTorch (via cuBLAS) uses highly optimized BMM (batch matrix multiplication) kernels that process multiple matrices per thread block to saturate the SMs. In contrast, our naive kernel assigns one block per $4\times4$ matrix, leaving the vast majority of threads in the warp idle.
 
-Indeed, given a batch of $B$ matrices of size $(n,n)$ to process, instead of using one block per matrix, PyTorch will try to *concatenate* them into an array of
+So, we too need to process our matrices in batches instead of one-by-one. To do so, we can pack our $B$ matrices into
 
 $$N_{block} = \bigg\lceil \frac{B}{\text{BLOCK_SIZE}} \bigg\rceil$$
 
-tensors of shape $(\text{BLOCK\_SIZE},n,n)$, and then process a *full tensor* per block. This technique is known as block tiling, it's useful when the data objects you're processing are too small to saturate the GPU's cores. See [Figure 5](#fig-5) for an illustration.
+tensors of shape $(\text{BLOCK\_SIZE},n,n)$, and then process a *full tensor* per block. This technique is known as **block tiling**, it's useful when the data objects you're processing are too small to saturate the GPU's threads. See [Figure 5](#fig-5) for an illustration.
 
 <div class="row justify-content-center" id="fig-6">
     <div class="col-sm-12 mt-3 mt-md-0">
@@ -486,7 +488,7 @@ The next three figures compare the implementations across three performance metr
 
 Note that the execution time uses the **median** (instead of the mean) to avoid being skewed by outliers, since kernel execution times tend to exhibit positive skew.
 
-We also compute the 99% confidence interval (`q01` to `q99`) to ensure the **statistical significance** of the results.
+We also compute the 98% confidence interval (`q01` to `q99`) to ensure the **statistical significance** of the results.
 
 Also, the memory bandwidth and compute throughput are computed as follows:
 - **Memory bandwidth** = $\frac{\text{total bytes read from/written to global memory}}{\text{median execution time}}$
@@ -506,7 +508,7 @@ Also, we consistently witness two regimes:
     </div>
 </div>
 <div class="caption">
-    <b>Figure 8.</b> Comparison of median execution time for various implementations of Sinkhorn's algorithm. The shading represents the 99% confidence interval (<code>q01</code> to <code>q99</code>). For batch sizes below 1k, we operate in the latency-bound regime (i.e. some of the GPUs SMs are idle) and as such execution time is roughly constant. Past this threshold, we enter the memory-bound regime where execution time scales linearly with batch size.
+    <b>Figure 8.</b> Comparison of median execution time for various implementations of Sinkhorn's algorithm. The shading represents the 98% confidence interval (<code>q01</code> to <code>q99</code>). For batch sizes below 1k, we operate in the latency-bound regime (i.e. some of the GPUs SMs are idle) and as such execution time is roughly constant. Past this threshold, we enter the memory-bound regime where execution time scales linearly with batch size.
 </div>
 
 <div class="row justify-content-center" id="fig-9">
