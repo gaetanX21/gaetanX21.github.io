@@ -23,21 +23,20 @@ $$
 $$
 
 
-* Table of Contents
-{:toc}
-
 In their latest paper, charmingly titled *Manifold-Constrained Hyper-Connections*[^mhc], DeepSeek improved upon preexisting research on **residual stream scaling** with two major contributions:
 1. an approach that's more **stable** than previous papers, with demonstrated performance at scale
 2. an **efficient** infrastructure design that minimizes the overhead of hyper-connections compared to vanilla transformers
 
-While I encourage you to read the full paper, my goal in this post is to delve deeper into the second part. More precisely, I want to focus on the Sinkhorn projection step of their architecture: why we need custom fused GPU kernels to implement it, and how to do it.
+My goal in this post is to delve deeper into the second part. More precisely, I want to focus on the Sinkhorn projection step of their architecture: why we need custom fused GPU kernels to implement it, and how to do it.
 
-I'll first discuss the theory around mHC and Sinkhorn, then I'll showcase increasingly fast (and tricky) Triton kernels for the Sinkhorn algorithm.
+This post will be in three parts:
+1. First, I'll present increasingly complex residual connection paradigms, culminating in the mHC architecture.
+2. Then, I'll provide some geometric intuition behind Sinkhorn's algorithm and derive it.
+3. Finally, I'll showcase increasingly fast Triton kernels for the Sinkhorn algorithm.
+
+[Figure 1](#fig-1) serves as a teaser of the crazy speedups we achieved. Let's dive in!
 
 *The code for this project can be found [here](https://github.com/gaetanX21/sinkhorn-triton).*
-
-
----
 
 <div class="row justify-content-center" id="fig-1">
     <div class="col-sm-12 mt-3 mt-md-0">
@@ -45,14 +44,24 @@ I'll first discuss the theory around mHC and Sinkhorn, then I'll showcase increa
     </div>
 </div>
 <div class="caption">
-    <b>Figure 1.</b> Our optimized Triton kernel beats the compiled PyTorch alternative by orders of magnitude.
+    <b>Figure 1.</b> Our optimized Triton kernel beats the compiled PyTorch alternative by 1 or 2 orders of magnitude.
 </div>
+
+---
+
+## Table of Contents
+{:.no_toc}
+
+* Table of Contents
+{:toc}
+
+---
 
 ## I. Scaling the residual stream
 
 A current trend in macro design of transformers is to scale the **size** of the residual stream. That is, instead of being a vector $\x\in\R^{\D}$, the per-token residual stream becomes a matrix $X\in\R^{n\times\D}$ where $n$ is a new scaling dimension (often a small value e.g. $n=4$). The motivation behind this architectural shift is that in vanilla transformers, model parameters and FLOPs scale *quadratically* with $\D$ whereas the residual stream scales *linearly*. Hence, as we keep increasing model size, the residual stream may become a **bottleneck**.
 
-### A. Residual Matrix Transformers
+### I.A. Residual Matrix Transformers
 
 My [previous post](/blog/residual-matrix-transformer/) discussed the **Residual Matrix Transformer** (RMT) architecture, which introduces a matrix representation of the per-token residual stream inspired by outer-product memories. The key idea is that using a matrix instead of a vector increases the effective storage capacity of the residual stream. The implementation of RMT is fairly simple, as the only difference compared to the classic transformer architecture is how we *read from* and *write to* the residual stream. Crucially, the micro design remains untouched (i.e. Attention and Feed-Forward blocks do not change), which implies that scaling the residual stream incurs negligible computational overhead, though it *does* cause memory access overhead if implemented naively (i.e. without fused kernels) as we will see.
 
@@ -69,7 +78,7 @@ where $\x_l\in\R^{\D}$ (resp. $X_l\in\R^{n\times\D}$) is the $l$-th layer vector
 $\Hpre_l, \Hpost_l \in \R^{1\times n}$ are *learned* vectors which correspond respectively to `READ` and `WRITE` operations on the residual stream memory store. 
 
 
-### B. Hyper-Connections
+### I.B. Hyper-Connections
 
 Hyper-Connections[^hc] (HC) extend the idea of RMT by enabling *communication* between the $n$ channels of the residual stream.
 
@@ -80,7 +89,7 @@ Thus, the residual connection in HC is even richer than in RMT thanks to $\Hres_
 $$X_{l+1} = \Hres_l X_l + {\Hpost}^T \F_l(\Hpre X_l)$$
 
 
-### C. Manifold-Constrained Hyper-Connections
+### I.C. Manifold-Constrained Hyper-Connections
 
 DeepSeek's Manifold-Constrained Hyper-Connections (mHC) address one critical flaw in HC: instability as the network depth $L$ scales.
 
@@ -119,9 +128,7 @@ Bistochastic matrices have three nice properties that make them ideal for stabil
 2. they are closed under matrix multiplication, meaning that the product of multiple bistochastic matrices is also bistochastic
 3. they can be given a probabilistic / optimal transport interpretation as *soft permutations*, meaning that they allow each channel to attend to and exchange with every other channel, without collapsing to a single channel
 
-I'm a bit surprised that the authors of HC did not think of the bistochastic constraint in the first place, as it seems like an intuitive solution to the instability problem. Perhaps they lacked an efficient implementation of the projection step, which is precisely the focus of this post!
-
-Indeed, to enforce the bistochastic constraint, we must first compute $\Hres_l$ as in HC, and then project it onto the manifold of bistochastic matrices $\B$, also known as Birkhoff's polytope. The next section goes into the details of this projection, which uses Sinkhorn's algorithm.
+To enforce the bistochastic constraint, we must first compute $\Hres_l$ as in HC, and then **project** it onto the manifold of bistochastic matrices $\B$, also known as Birkhoff's polytope. The next section goes into the details of this projection, which uses Sinkhorn's algorithm.
 
 
 ## II. Sinkhorn's Algorithm
@@ -134,7 +141,7 @@ Note that $\B$ is convex as we will use this property later. In fact it is the c
 
 Let's now present Sinkhorn's algorithm and derive its formulation intuitively.
 
-### A. Projecting under the generalized KL divergence
+### II.A. Projecting under the generalized KL divergence
 
 We've been talking about projections, but to define a projection, one needs a metric. In other words, we need a sensible metric $d: \Rnn \times \Rnn \to \Rnn$ and then we can try to find
 $$\text{Proj}_d^{\B}(M) = \arg\min_{P \in \B} d(P,M)$$
@@ -166,7 +173,7 @@ $$\min_{P \in \B} \KL(P\Vert M) \quad (S)$$
 </div>
 
 
-### B. Deriving the algorithm
+### II.B. Deriving the algorithm
 
 Now that we've defined the projection as solving $(S)$, let's derive Sinkhorn's algorithm. We'll tackle this problem just like any optimization problem, using Lagrange's multipliers.
 
@@ -234,7 +241,7 @@ Also, if we look at FLOPS, we see that each iteration requires only $4n^2+2n$ FL
 
 Sinkhorn's algorithm memory-boundedness can be addressed with kernel fusion. We will now explore increasingly complex implementations based on Triton kernels[^backward].
 
-### A. Hardware details
+### III.A. Hardware setup
 
 We're benchmarking on a **NVIDIA RTX 4000 Ada Generation** (released Aug 9th, 2023) [with](https://www.content.shi.com/cms-content/accelerator/media/pdfs/pny/pny-052124-nvidia-rtx-4000-ada.pdf):
 - 20GB of VRAM (GDDR6, not HBM)
@@ -250,7 +257,7 @@ Delivering a peak performance of:
 This isn't some fancy dual-die GB300 or whatever, but it's still enough to do some serious benchmarking. Let's get to it!
 
 
-### B. Mini-refresher on memory hierarchy
+### III.B. Mini-refresher on memory hierarchy
 
 I've said that Sinkhorn's algorithm is **memory-bound**. This may seem unclear if you're not familiar with "memory hierarchy". I'll recap it *very* briefly here, focusing on GPUs.
 
@@ -306,11 +313,11 @@ There's a lot more to be said about memory hierarchy but we'll stop here for now
 
 ---
 
-### C. Implementations
+### III.C. Implementations
 
 Now that the hardware is out of the way, let's dive into the implementations. We'll start with a naive PyTorch implementation, then move on to the Triton kernels!
 
-#### 1. Naive PyTorch implementation
+#### Naive PyTorch implementation
 
 We begin with a simple PyTorch implementation for reference.
 
@@ -355,7 +362,7 @@ sinkhorn_pytorch_compiled = torch.inference_mode()(torch.compile(sinkhorn_pytorc
 This second version is still inefficient, but it's a good sanity check to ensure that our Triton kernels are actually faster.
 
 
-#### 2. Basic fused kernel
+#### Basic fused kernel
 
 Currently we have two types of objects doing back and forths between global memory and registers:
 1. vector scalers $\mathbf{u}$, $\mathbf{v}$ of size $n$
@@ -399,13 +406,13 @@ Note that we use an accumulator $\mathbf{t}$ for the column normalization step. 
 This first kernel is a good start as we've reduced the I/O bandwidth caused by $\mathbf{u}$ and $\mathbf{v}$'s back-and-forths in global memory, but $M$ is still read twice per iteration, meaning that memory access *still* scales with $n_{iter}$. We can do much better!
 
 
-#### 3. Loading $M$ in registers
+#### Loading $M$ in registers
 
 First of all, we need a bit of context: remember that we're using Sinkhorn's algorithm to project $\Hres_l$ onto Birkhoff's polytope. But **$\Hres_l$ is a tiny matrix** since the scaling factor $n$ of the residual stream is a small integer value. For the sake of simplicity, we'll stick with $n=4$ like in mHC. This means that $M$ is effectively a $4\times 4$ matrix, which can easily fit in registers! Thus, we can update the kernel to have $M$ live in the registers, which will save us a lot more I/O bandwidth!
 
 This gives us exactly the same algorithm as above, except that $M$ is loaded in the registers at the beginning of the kernel, so we don't need to read it from memory at every row / column normalization step! One other difference: the `exp` operation on $M$ is now done on-the-fly inside the registers, which saves one back-and-forth between global memory and registers.
 
-#### 4. Block Packing
+#### Block packing
 
 The previous solution may seem optimal, but we can in fact still do *much* better!
 
@@ -433,7 +440,7 @@ Choosing the right $\text{BLOCK\_SIZE}$ i.e. how many matrices to pack in a sing
 Our last kernel thus reuses the same layout as the previous one, except that we now process a full tensor of shape $(\text{BLOCK_SIZE},n,n)$ per block. For $n=4$, we thus end up using tensors of dimension $(64, 4, 4)$.
 
 
-### D. Benchmark
+### III.D. Benchmark
 
 We have presented in total **5 implementations** of Sinkhorn's algorithm:
 1. naive PyTorch (`sinkhorn_pytorch`)
@@ -452,9 +459,9 @@ As for the batch size $B$, we will sweep from $1$ to $2^{24}\sim 16M$. The reaso
 1. because $\Hres_l$ is defined at the **token-level**, it means that for a given network layer $l$, we need as many Sinkhorn projections as we have tokens in our batch. Thus, the relevant batch size $B$ to benchmark on is the microbatch size $mbs$. Today's pretraining pipelines commonly use microbatch sizes in the range $mbs\in[4096, 16384]$[^mbs], which justifies benchmarking at least up to $B=16k$.
 2. it allows us to escape the uninteresting *latency-bound* regime and get to the much cooler *memory-bound* regime (that's why we push $B$ much further than the $16k$ required for pretraining)
 
-### E. Figures
+### III.E. Figures
 
-#### 1. Vanity metric
+#### Vanity metric
 
 [Figure 7](#fig-7) shows the speedup of the most optimized Triton kernel (`sinkhorn_A_in_registers_block_packing`) over the compiled PyTorch implementation (`sinkhorn_pytorch_compiled`). We can see that for batch sizes below 1k, both implementations operate in the latency-bound regime, hence the speedup is roughly constant (and scales with $n_{iter}$). Past this threshold, we enter the memory-bound regime where the Triton kernel's I/O awareness shines!
 
@@ -470,7 +477,7 @@ In any case, the speedup ranges from 20x to **139x**, which is pretty cool!
 </div>
 
 
-#### 2. Comparing implementations
+#### Comparing implementations
 
 The next three figures compare the implementations across three performance metrics:
 1. **Execution time** (lower is better) on [Figure 8](#fig-8)
