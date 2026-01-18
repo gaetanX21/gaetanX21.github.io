@@ -454,13 +454,9 @@ As for the batch size $B$, we will sweep from $1$ to $2^{24}\sim 16M$. The reaso
 
 ### E. Figures
 
+#### 1. Vanity metric
 
-[Figure 7](#fig-7) is the vanilla metric.
-
-
-#### 1. Vanilla metric
-
-It shows the speedup of the most optimized Triton kernel (`sinkhorn_A_in_registers_block_packing`) over the compiled PyTorch implementation (`sinkhorn_pytorch_compiled`). We can see that for batch sizes below 1k, both implementations operate in the latency-bound regime, hence the speedup is roughly constant (and scales with $n_{iter}$). Past this threshold, we enter the memory-bound regime where the Triton kernel's I/O awareness shines!
+[Figure 7](#fig-7) shows the speedup of the most optimized Triton kernel (`sinkhorn_A_in_registers_block_packing`) over the compiled PyTorch implementation (`sinkhorn_pytorch_compiled`). We can see that for batch sizes below 1k, both implementations operate in the latency-bound regime, hence the speedup is roughly constant (and scales with $n_{iter}$). Past this threshold, we enter the memory-bound regime where the Triton kernel's I/O awareness shines!
 
 In any case, the speedup ranges from 20x to **139x**, which is pretty cool!
 
