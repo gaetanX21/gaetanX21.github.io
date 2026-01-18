@@ -44,7 +44,7 @@ This post will be in three parts:
     </div>
 </div>
 <div class="caption">
-    <b>Figure 1.</b> Our optimized Triton kernel beats the compiled PyTorch alternative by 1 or 2 orders of magnitude.
+    <b>Figure 1.</b> Our optimized Triton kernel beats the compiled PyTorch alternative by two orders of magnitude for realistic batch sizes.
 </div>
 
 ---
