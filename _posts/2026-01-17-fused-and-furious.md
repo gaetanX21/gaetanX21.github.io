@@ -115,7 +115,7 @@ The matrix product $\Pi=\overleftarrow{\prod} _ {k=0}^{m-1}\Hres_{l+k}$ has no r
 </div>
 
 <div class="row justify-content-center" id="fig-3">
-    <div class="col-sm-12 mt-3 mt-md-0">
+    <div class="col-sm-10 mt-3 mt-md-0">
         {% include figure.liquid loading="eager" path="assets/img/posts/fused_and_furious/mhc_teaser.png" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
@@ -282,7 +282,7 @@ Below is a table summarizing the key differences between SRAM and VRAM. [Figure 
 <br>
 
 <div class="row justify-content-center" id="fig-5">
-    <div class="col-sm-6 mt-3 mt-md-0">
+    <div class="col-sm-8 mt-3 mt-md-0">
         {% include figure.liquid loading="eager" path="assets/img/posts/fused_and_furious/mem_hierarchy.png" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
@@ -296,18 +296,27 @@ Below is a table summarizing the key differences between SRAM and VRAM. [Figure 
 
 This means that if you implement things naively, each operation costs you a back and forth between VRAM and SRAM. For example, imagine you have 2 matrices $A$ and $B$ and want to compute their product $C$. Three things happen sequentially:
 1. $A$ and $B$ are loaded into SRAM. (VRAM → SRAM)
-2. The computation is done in SRAM.
+2. The computation is done in SRAM. (no memory transfer)
 3. The result $C$ is written back to VRAM. (SRAM → VRAM)
 
-This seems fair. But now imagine you have a matrix $A$ and want to do 2 things on it: first square it, then exponentiate it. If you do it naively, you'll have to do 4 back and forths between VRAM and SRAM:
+This seems fair. But now imagine you have a matrix $A$ and want to do 2 things on it: first square it, then exponentiate it, both element-wise. If you do it naively, you'll have to do 4 back and forths between VRAM and SRAM:
 1. $A$ is loaded into SRAM. (VRAM → SRAM)
-2. $A$ is squared in SRAM.
+2. $A$ is squared element-wise in SRAM. (no memory transfer)
 3. The result $A^2$ is written back to VRAM. (SRAM → VRAM)
 4. $A^2$ is loaded into SRAM. (VRAM → SRAM)
-5. $A^2$ is exponentiated in SRAM.
+5. $A^2$ is exponentiated element-wise in SRAM. (no memory transfer)
 6. The result $\exp(A^2)$ is written back to VRAM. (SRAM → VRAM)
 
-This is clearly suboptimal. What if we could do both operations in one go? That's where **fused kernels** come in. A fused kernel is a kernel that does multiple sequential operations in the registers, hence minimizing the number of back and forths between VRAM and SRAM. This is exactly what we're going to do in the next section.
+This is clearly suboptimal. What if we could do both operations in one go? That's where **fused kernels** come in. A fused kernel is a kernel that does multiple sequential operations in the registers, hence minimizing the number of back and forths between VRAM and SRAM.  This is exactly what we're going to do in the next section.[^kernel-fusion]
+
+<div class="row justify-content-center" id="fig-6">
+    <div class="col-sm-8 mt-3 mt-md-0">
+        {% include figure.liquid loading="eager" path="assets/img/posts/fused_and_furious/kernel_fusion.png" class="img-fluid rounded z-depth-1" %}
+    </div>
+</div>
+<div class="caption">
+    <b>Figure 6.</b> A simplified illustration of kernel fusion. Consider element-wise squaring then exponentiation. The naive implementation requires two back and forths between VRAM and SRAM, whereas the fused kernel only requires one.
+</div>
 
 Also, whenever we refer to *registers*, think of it as a more granular way to refer to SRAM. In practice, the SRAM is more than just registers (it also includes shared memory & L1/L2 cache) but for the purpose of this blog post, you can equate these two concepts in your mind.
 
@@ -335,7 +344,7 @@ def sinkhorn_pytorch(
 ) -> torch.Tensor:
     """PyTorch baseline for comparison with Triton kernels."""
     M = torch.exp(log_M)
-    M_T = M.transpose(-1, -2)  # free transpose (view trick)
+    M_T = M.transpose(-1, -2)  # O(1) stride manipulation
     B, N, _ = M.shape
 
     # initialize scalers
@@ -424,15 +433,15 @@ So, we too need to process our matrices in batches instead of one-by-one. To do 
 
 $$N_{block} = \bigg\lceil \frac{B}{\text{BLOCK_SIZE}} \bigg\rceil$$
 
-tensors of shape $(\text{BLOCK\_SIZE},n,n)$, and then process a *full tensor* per block. This technique is known as **block tiling**, it's useful when the data objects you're processing are too small to saturate the GPU's threads. See [Figure 5](#fig-5) for an illustration.
+tensors of shape $(\text{BLOCK\_SIZE},n,n)$, and then process a *full tensor* per block. This technique is known as **block packing**[^block-packing], it's useful when the data objects you're processing are too small to saturate the GPU's threads. See [Figure 5](#fig-5) for an illustration.
 
-<div class="row justify-content-center" id="fig-6">
-    <div class="col-sm-12 mt-3 mt-md-0">
+<div class="row justify-content-center" id="fig-7">
+    <div class="col-sm-10 mt-3 mt-md-0">
         {% include figure.liquid loading="eager" path="assets/img/posts/fused_and_furious/block_packing.png" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
 <div class="caption">
-    <b>Figure 6.</b> Block packing: instead of using one block per matrix, we pack $B$ matrices into $N_{block}$ tensors of shape $(\text{BLOCK_SIZE}, n, n)$ and process a full tensor per block. Consequently, the threads dedicated to each block are better utilized (higher occupancy). In this example, $B=8, N_{block}=2, \text{BLOCK_SIZE}=4$.
+    <b>Figure 7.</b> Block packing: instead of using one block per matrix, we pack $B$ matrices into $N_{block}$ tensors of shape $(\text{BLOCK_SIZE}, n, n)$ and process a full tensor per block. Consequently, the threads dedicated to each block are better utilized (higher occupancy). In this example, $B=8, N_{block}=2, \text{BLOCK_SIZE}=4$.
 </div>
 
 This is much more efficient than using one block per matrix, which is what the two previous kernels are doing. The reason for that is that **a block has significant resources**: 4 warps by default, each with 32 threads, meaning a total of 128 threads. Thus, assigning a single $4\times 4$ matrix per block means we're effectively dedicating 8 threads per matrix element, which is *way* too much and leads to underutilization i.e. idle threads. This in turn greatly slows down the kernel as it hinders parallelism (since the idle threads cannot be used to process other matrices).
@@ -465,17 +474,17 @@ As for the batch size $B$, we will sweep from $1$ to $2^{24}\sim 16M$. The reaso
 
 #### Vanity metric
 
-[Figure 7](#fig-7) shows the speedup of the most optimized Triton kernel (`sinkhorn_A_in_registers_block_packing`) over the compiled PyTorch implementation (`sinkhorn_pytorch_compiled`). We can see that for batch sizes below 1k, both implementations operate in the latency-bound regime, hence the speedup is roughly constant (and scales with $n_{iter}$). Past this threshold, we enter the memory-bound regime where the Triton kernel's I/O awareness shines!
+[Figure 8](#fig-8) shows the speedup of the most optimized Triton kernel (`sinkhorn_A_in_registers_block_packing`) over the compiled PyTorch implementation (`sinkhorn_pytorch_compiled`). We can see that for batch sizes below 1k, both implementations operate in the latency-bound regime, hence the speedup is roughly constant (and scales with $n_{iter}$). Past this threshold, we enter the memory-bound regime where the Triton kernel's I/O awareness shines!
 
 In any case, the speedup ranges from 20x to **139x**, which is pretty cool!
 
-<div class="row justify-content-center" id="fig-7">
+<div class="row justify-content-center" id="fig-8">
     <div class="col-sm-12 mt-3 mt-md-0">
         {% include figure.liquid loading="eager" path="assets/img/posts/fused_and_furious/speedup.png" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
 <div class="caption">
-    <b>Figure 7.</b> For batch sizes below 1k, both the naive PyTorch function and the optimized Triton kernel operate in the latency-bound regime, hence the speedup is roughly constant (and scales with <code>n_iter</code>). Past this threshold, we enter the memory-bound regime where the Triton kernel's I/O awareness shines.
+    <b>Figure 8.</b> For batch sizes below 1k, both the naive PyTorch function and the optimized Triton kernel operate in the latency-bound regime, hence the speedup is roughly constant (and scales with <code>n_iter</code>). Past this threshold, we enter the memory-bound regime where the Triton kernel's I/O awareness shines.
 </div>
 
 
@@ -502,31 +511,31 @@ Also, we consistently witness two regimes:
 1. $B\ll 1k$ is the **latency-bound regime**: the amount of data is not sufficient to keep all the GPU's SMs busy, and as such execution time is roughly constant. In this regime, the GPU's throughput scales linearly with batch size as more SMs are utilized, meaning we can effectively scale memory bandwidth and compute throughput "for free" thanks to increased parallelism.
 2. $B\gg 1k$ is the **memory-bound regime**: there's now enough data to use all the GPU's SMs, and as such execution time now scales linearly with batch size i.e. no more "free" performance from increased parallelism. That's why global throughput mostly plateaus beyond $B=16k$.
 
-<div class="row justify-content-center" id="fig-8">
+<div class="row justify-content-center" id="fig-9">
     <div class="col-sm-12 mt-3 mt-md-0">
         {% include figure.liquid loading="eager" path="assets/img/posts/fused_and_furious/timing.png" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
 <div class="caption">
-    <b>Figure 8.</b> Comparison of median execution time for various implementations of Sinkhorn's algorithm. The shading represents the 98% confidence interval (<code>q01</code> to <code>q99</code>). For batch sizes below 1k, we operate in the latency-bound regime (i.e. some of the GPUs SMs are idle) and as such execution time is roughly constant. Past this threshold, we enter the memory-bound regime where execution time scales linearly with batch size.
+    <b>Figure 9.</b> Comparison of median execution time for various implementations of Sinkhorn's algorithm. The shading represents the 98% confidence interval (<code>q01</code> to <code>q99</code>). For batch sizes below 1k, we operate in the latency-bound regime (i.e. some of the GPUs SMs are idle) and as such execution time is roughly constant. Past this threshold, we enter the memory-bound regime where execution time scales linearly with batch size.
 </div>
 
-<div class="row justify-content-center" id="fig-9">
+<div class="row justify-content-center" id="fig-10">
     <div class="col-sm-12 mt-3 mt-md-0">
         {% include figure.liquid loading="eager" path="assets/img/posts/fused_and_furious/memory_bandwidth.png" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
 <div class="caption">
-    <b>Figure 9.</b> Memory bandwidth increases linearly with batch size in the latency-bound regime as we distribute the work to more SMs, then saturates in the memory-bound regime. Note the peak bandwidth of 238 GB/s, satisfyingly close to the hardware limit of 360 GB/s for this GPU. Note that the memory bandwidth decreases as <code>n_iter</code> increases, which is expected as we spend more time computing inside the registers and less time exchanging data between global memory and registers. For <code>n_iter=1</code> we get 312 GB/s peak I/O bandwidth i.e. 87% of the hardware limit.
+    <b>Figure 10.</b> Memory bandwidth increases linearly with batch size in the latency-bound regime as we distribute the work to more SMs, then saturates in the memory-bound regime. Note the peak bandwidth of 238 GB/s, satisfyingly close to the hardware limit of 360 GB/s for this GPU. Note that the memory bandwidth decreases as <code>n_iter</code> increases, which is expected as we spend more time computing inside the registers and less time exchanging data between global memory and registers. For <code>n_iter=1</code> we get 312 GB/s peak I/O bandwidth i.e. 87% of the hardware limit.
 </div>
 
-<div class="row justify-content-center" id="fig-10">
+<div class="row justify-content-center" id="fig-11">
     <div class="col-sm-12 mt-3 mt-md-0">
         {% include figure.liquid loading="eager" path="assets/img/posts/fused_and_furious/compute_throughput.png" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
 <div class="caption">
-    <b>Figure 10.</b> Like memory bandwidth, compute throughput increases linearly with batch size in the latency-bound regime, then saturates in the memory-bound regime. Note the peak throughput of 2.7 TFLOPS, which is very far from the hardware limit of 26 TFLOPS for this GPU. This isn't surprising as Sinkhorn's algorithm is memory-bound.
+    <b>Figure 11.</b> Like memory bandwidth, compute throughput increases linearly with batch size in the latency-bound regime, then saturates in the memory-bound regime. Note the peak throughput of 2.7 TFLOPS, which is very far from the hardware limit of 26 TFLOPS for this GPU. This isn't surprising as Sinkhorn's algorithm is memory-bound.
 </div>
 
 ---
@@ -547,4 +556,6 @@ Also, we consistently witness two regimes:
 [^num-warps]: Out of curiosity, I also tuned $\text{num_warps}$ and ran a grid search on $(\text{BLOCK\_SIZE},\text{num\_warps})\in[64,128,256,512,1024] \times [4,8,16\]$. I found that depending on the batch size $B$, different configurations yielded the best results. I chose to omit this ablation here for the sake of simplicity.
 [^mbs]: Here we define the microbatch size as $mbs={seq\\_per\\_batch}\times{seq\\_len}$, where we commonly have $seq\\_per\\_batch \in [1,2,4]$ and $seq\\_len \in [4096, 8192, 16,384]$ in pretraining pipelines.
 [^hbm]: Technically, HBM is one *type* of VRAM technology, which is used in high-end AI chips e.g. NVIDIA's Hopper architecture. But not all GPUs have their HBM VRAM. In fact, gaming GPUs using GDDR, which is much less expensive than HBM. (it's the reason why your gaming graphics card doesn't cost $30k)
-[^positivity]: We assume $M$ has strictly positive entries. If not, we can exponentiate $M$ to ensure , which is what we do in the various proposed implementations.
+[^positivity]: We assume $M$ has strictly positive entries. If not, we can exponentiate $M$ to ensure non-negativity, which is what we do in the various proposed implementations.
+[^kernel-fusion]: Not every operation can be trivially fused though. Element-wise operations (e.g. $ReLU$) are the easiest to fuse, and reduction fusion (e.g. `Softmax`) is also relatively straightforward. However, matrix multiplication (GEMM kernels) are much harder to fuse as the memory access patterns are too chaotic.
+[^block-packing]: From what I've gathered, block packing is also known as batch tiling or per-block batching.
