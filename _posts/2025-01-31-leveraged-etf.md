@@ -243,9 +243,9 @@ You may wonder: who uses LETFs then? I have no definite answer, but certainly tr
 
 [^avellaneda]: *Path-dependence of Leveraged ETF returns*. Avellaneda, M.
 [^dynamics]: *The Dynamics of Leveraged and Inverse Exchange-Traded Funds*. Cheng, M. & Madhavan, A.
-[^investopedia]: *A Brief History of Exchange-Traded Funds*. Simpson, S. [Investopedia.com](investopedia.com/articles/exchangetradedfunds/12/brief-history-exchangetraded-funds.asp)
-[^ishares]: *Global ETF Market Facts: Three things to know from Q3 2023.*. Cohen, S. [iShares.com](ishares.com/us/insights/global-etf-facts)
-[^marketwatch]: *ProFunds prepares first leveraged ETFs*. Spence, J. [MarketWatch.com](marketwatch.com/story/profunds-readies-first-leveraged-etfs)
-[^sec]: *Updated Investor Bulletin: Leveraged and Inverse ETFs*. SEC Investor Alerts and Bulletins. [sec.gov](sec.gov/resources-for-investors/investor-alertsbulletins/updated-investor-bulletin-leveraged-inverse-etfs)
+[^investopedia]: *A Brief History of Exchange-Traded Funds*. Simpson, S. [Investopedia.com](https://www.investopedia.com/articles/exchangetradedfunds/12/brief-history-exchange-traded-funds.asp)
+[^ishares]: *Global ETF Market Facts: Three things to know from Q3 2023.*. Cohen, S. [iShares.com](https://ishares.com/us/insights/global-etf-facts)
+[^marketwatch]: *ProFunds prepares first leveraged ETFs*. Spence, J. [MarketWatch.com](https://marketwatch.com/story/profunds-readies-first-leveraged-etfs)
+[^sec]: *Updated Investor Bulletin: Leveraged and Inverse ETFs*. SEC Investor Alerts and Bulletins. [sec.gov](https://sec.gov/resources-for-investors/investor-alertsbulletins/updated-investor-bulletin-leveraged-inverse-etfs)
 
 
