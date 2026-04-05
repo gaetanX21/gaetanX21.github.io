@@ -16,6 +16,7 @@ $$\newcommand{\R}{\mathbb{R}}
 \newcommand{\k}{\mathbf{k}}
 \newcommand{\v}{\mathbf{v}}
 \newcommand{\e}{\mathbf{e}}
+\newcommand{\s}{\mathbf{s}}
 \newcommand{\I}{\mathbf{I}}
 \newcommand{\S}{\mathcal{S}}
 \newcommand{\U}{\text{U}}
@@ -161,7 +162,7 @@ With the coordinates of $\y$ following a well-known distribution and being asymp
 
 Formally, the optimization problem we solve is a 1-dimensional $k$-means clustering problem:
 $$
-\mathcal{C}(f_X, b) = \min_{\substack{-1\leq c_1 \leq c_2 \leq \dots \leq c_{2^b} \leq 1}} \sum_{i=1}^{2^B} \int_{\frac{c_{i-1}+c_i}{2}}^{\frac{c_i+c_{i+1}}{2}} f_X(x) \|x - c_i\|^2 dx
+\mathcal{C}(f_X, b) = \min_{\substack{-1\leq c_1 \leq c_2 \leq \dots \leq c_{2^b} \leq 1}} \sum_{i=1}^{2^B} \int_{\frac{c_{i-1}+c_i}{2}}^{\frac{c_i+c_{i+1}}{2}} f_X(x) \| x - c_i \|^2 dx
 $$
 
 The beauty here is that we can compute these centroids analytically for the Beta distribution, so we don't even need to see the data to design our quantizer! For a given dimension $d$ and bit budget $b$, we can precompute the optimal quantization scheme and store the results for future use during inference.
@@ -196,7 +197,7 @@ $$
 \end{array}
 $$
 
-## III. Stage 2: QJL and the Need for Unbiasedness
+## III. Stage 2: QJL for unbiasedness
 
 Stage 1 compresses the data efficiently in terms of MSE, but it does not guarantee that the inner products are unbiased, i.e. $\E_Q[\inner{q}{\tilde{k}}] \neq \inner{q}{k}$. This is a problem for attention, which relies heavily on inner products between queries and keys to compute attention weights.
 
@@ -222,39 +223,30 @@ $$
 \end{aligned}
 $$
 
-
 Remarkably, the QJL transform has the following property: for any $\x, \y \in \R^d$, if we note $\tilde{\x} = \QJL^{-1}(\QJL(\x))$ as the reconstructed version of $\x$, we have
 
 $$\E_Q[\inner{\y}{\tilde{\x}}] = \inner{\y}{\x}$$
 
 In other words, the inner product between $\y$ and the quantized version of $\x$ is an unbiased estimator of the true inner product between $\y$ and $\x$. This is exactly what we need for attention!
 
+Before proving this, let's build some geometric intuition for why this is the case.
+
 
 ### B. Geometric intuition of QJL
 
-### B. The QJL Magic
+The QJL transform can be seen as a random hyperplane hashing scheme.
 
-The goal of QJL is to ensure that the expected value of our quantized inner product perfectly matches the true inner product. Let's prove that $\inner{\y}{\QJL^{-1}(\QJL(\x))}$ is an unbiased estimator of $\inner{\y}{\x}$.
+If we denote $\s_1^T, \s_2^T, \dots, \s_d^T$ the rows of the random matrix $S$ and $\z=\QJL(\x)$, then we see that $\z_i = \text{sign}(\inner{\s_i}{\x})$ is the sign of the projection of $\x$ onto the random vector $\s_i$. Thus, each row of $S$ defines a random hyperplane in $\R^d$, and the sign of $\z_i$ indicates on which side of the hyperplane $\x$ lies. The collection of signs $\z$ encodes a sort of "binary fingerprint" of the position of $\x$ relative to these random hyperplanes.
 
-Let $Q(\cdot)$ represent the stochastic quantization function (the core of QJL), which maps continuous values to a discrete grid such that the expected value of the quantized point is the original point:
-$$\E[\QJL(\x)] = \x$$
+The dequantization step $\QJL^{-1}(\z)=\frac{\sqrt{\pi/2}}{d} \sum_{i=1}^d  \z_i \s_i$ reconstructs the $\x$ vector as a linear combination of the random vectors $\s_i$, weighted by the signs $\z_i$. Thus, the underlying heuristic is essentially, for each coordinate $\z_i$:
+- if $\z_i=1$, it means that $\x$ is on the positive side of the hyperplane defined by $\s_i$, which means that $\s_i$ somewhat points in the same general direction as $\x$, so we add $\s_i$ to the reconstruction to get closer to $\x$.
+- on the contrary, $\z_i=-1$ means that $\s_i$ somewhat points in the opposite direction of $\x$, so we subtract $\s_i$ from the reconstruction to get closer to $\x$.
 
-Because the inner product is a linear operator, we can pull the expectation outside:
-$$\E[\inner{\y}{\QJL^{-1}(\QJL(\x))}] = \inner{\y}{\E[\QJL^{-1}(\QJL(\x))]}$$
+Intuitively, we feel that as $d$ gets larger, the random hyperplanes defined by the $\s_i$ will be distributed more and more uniformly in all directions, such that the "binary fingerprint" $\z$ will capture more and more information about the position of $\x$ in space, and thus the reconstruction should be more and more accurate. Indeed, we can show that not only does QJL yield unbiased inner products estimators, but the variance $\text{Var}(\inner{\y}{\tilde{\x}})$ scales in $\frac{1}{d}$! Very neat result if you ask me!
 
-Assuming the dequantization function $\QJL^{-1}$ is designed such that $\E[\QJL^{-1}(\QJL(\x))] = \x$ (which is the definition of an unbiased quantizer), the equation beautifully collapses:
-$$\E[\inner{\y}{\QJL^{-1}(\QJL(\x))}] = \inner{\y}{\x}$$
+### C. Unbiasedness of inner products via QJL
 
-**Corollary:** If we want to prove that the dequantized vector itself is an unbiased estimator of $\x$, we simply set $\y = \e_i$ for all standard basis vectors.
-$$\E[\inner{\e_i}{\QJL^{-1}(\QJL(\x))}] = \E[\QJL^{-1}(\QJL(\x))_i] = x_i$$
-Thus, $\E[\QJL^{-1}(\QJL(\x))] = \x$.
-
-
-### C. The Geometric Intuition of QJL
-
-If you look at Figure 2, the geometry is striking. Standard deterministic quantization (like nearest-neighbor) snaps vectors to a rigid grid. If a vector points slightly off-axis, nearest-neighbor might snap it perfectly onto the axis, fundamentally altering its angle (and thus, its inner product with other vectors).
-
-QJL introduces calibrated noise. Instead of always snapping to the nearest grid point, it randomly snaps to adjacent grid points with probabilities proportional to the distance. Geometrically, the quantized vector forms a "cloud" of possible points around the true vector $\x$. The barycenter (expected value) of this cloud is exactly $\x$. Therefore, when another hyperplane (the query vector) slices through this space to compute a dot product, the expected projection matches the unquantized projection perfectly.
+ADD PROOF
 
 ## Conclusion
 
@@ -265,7 +257,7 @@ TurboQuant isn't just a win for hardware efficiency; it's a triumph of applied h
 
 **References**:
 
-[^kv-cache-usage]: For Grouped Query Attention, KV cache usage per token can be computed as $L \times n_{KV} \times (d_k + d_v) \times \text{precision}$ bytes/token, where $L$ is the number of layers, $n_{KV}$ is the number of KV heads per attention block, and $d_k$, $d_v$ are the dimensions of keys and values respectively. For instance, for [Ministral 7B](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2) we have $L=32$, $n_{KV}=8$, $d_k=d_v=128$, resulting in 131kB per token if we use 16-bit precision (BF16) for activations. For a 100k token trajectory, common in agentic rollouts, this amounts to 13GB KV cache overhead, which is prohibitive for most hardware setups.
+[^kv-cache-usage]: For Grouped Query Attention, KV cache usage per token can be computed as $L \cdot n_{KV} \cdot (d_k + d_v) \cdot \text{precision}$ bytes/token, where $L$ is the number of layers, $n_{KV}$ is the number of KV heads per attention block, and $d_k$, $d_v$ are the dimensions of keys and values respectively. For instance, for [Ministral 7B](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2) we have $L=32$, $n_{KV}=8$, $d_k=d_v=128$, resulting in 131kB per token if we use 16-bit precision (BF16) for activations. For a 100k token trajectory, common in agentic rollouts, this amounts to 13GB KV cache overhead, which is prohibitive for most hardware setups.
 [^turboquant-post]: Google Research (2025). *TurboQuant: Redefining AI Efficiency with Extreme Compression.* [[post](https://research.google/blog/turboquant-redefining-ai-efficiency-with-extreme-compression/)]
 [^turboquant-paper]: Zandieh, A. et al. (2025). *TurboQuant: Online Vector Quantization with Near-optimal Distortion Rate.* [[arXiv](https://arxiv.org/abs/2504.19874)]
 [^qjl]: Zandieh, A. et al. (2024). *QJL: 1-Bit Quantized JL Transform.* [[arXiv](https://arxiv.org/abs/2406.03482)]
