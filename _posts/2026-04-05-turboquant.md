@@ -197,7 +197,7 @@ $$
 \mathcal{C}(f_X, b) = \min_{\substack{-1\leq c_1 \leq c_2 \leq \dots \leq c_{2^b} \leq 1}} \sum_{i=1}^{2^b} \int_{\frac{c_{i-1}+c_i}{2}}^{\frac{c_i+c_{i+1}}{2}} f_X(x) \| x - c_i \|^2 dx
 $$
 
-The beauty here is that we can compute these centroids analytically for the Beta distribution, so we don't even need to see the data to design our quantizer! For a given dimension $d$ and bit budget $b$, we can precompute the optimal quantization scheme and store the results for future use during inference.
+The beauty here is that we can numerically approximate these centroids for our Beta distribution, so we don't even need to see the data to design our quantizer! For a given dimension $d$ and bit budget $b$, we can precompute the optimal quantization scheme and store the results for future use during inference.
 
 <div class="row justify-content-center" id="fig-3">
     <div class="col-sm-12 mt-3 mt-md-0">
@@ -282,7 +282,7 @@ The dequantization step can be developed as $\QJL^{-1}(\z)=\frac{\sqrt{\pi/2}}{d
 
 Note that the $\frac{\sqrt{\pi/2}}{d}$ scaling factor is there to compensate the stretching effect of the random projection, ensuring that the expected length of the reconstructed vector matches that of the original vector. This factor naturally appears in the proof of unbiasedness.
 
-Intuitively, we feel that as $d$ gets larger, the random hyperplanes defined by the $\s_i$ will be distributed more and more uniformly in all directions, such that the "binary fingerprint" $\z$ will capture more and more information about the position of $\x$ in space, and thus the reconstruction should be more and more accurate. Indeed, we can show that not only does QJL yield unbiased inner products estimators, but the variance $\text{Var}(\inner{\y}{\tilde{\x}})$ scales in $\frac{1}{d}$! We will prove this neat result in the next section.
+Intuitively, we feel that as $d$ gets larger, the random hyperplanes defined by the $\s_i$ will be distributed increasingly uniformly in all directions, such that the "binary fingerprint" $\z$ will capture more and more information about the position of $\x$ in space, and thus the reconstruction should be more and more accurate. Indeed, we can show that not only does QJL yield unbiased inner products estimators, but the variance $\text{Var}(\inner{\y}{\tilde{\x}})$ scales in $\frac{1}{d}$! We will prove this neat result in the next section.
 
 ### C. Unbiasedness of inner products via QJL
 
