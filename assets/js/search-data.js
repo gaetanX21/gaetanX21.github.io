@@ -30,7 +30,18 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/cv/";
           },
-        },{id: "post-fused-amp-furious-sinkhorn-triton-kernels",
+        },{id: "post-turboquant-kv-cache-hyper-compression",
+      
+        title: "TurboQuant: KV cache hyper compression",
+      
+      description: "TL;DR: As LLM trajectories get longer with the rise of agentic workflows, the KV cache becomes a massive memory bottleneck. Google&#39;s TurboQuant solves this via a lightweight, online, accelerator-friendly algorithm. We explore the beautiful high-dimensional geometry that makes it work: from random rotations on the $d$-sphere to minimize MSE distortion to unbiased inner products via QJL.",
+      section: "Posts",
+      handler: () => {
+        
+          window.location.href = "/blog/turboquant/";
+        
+      },
+    },{id: "post-fused-amp-furious-sinkhorn-triton-kernels",
       
         title: "Fused &amp; Furious: Sinkhorn Triton Kernels",
       
