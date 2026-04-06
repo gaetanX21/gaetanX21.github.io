@@ -2,7 +2,7 @@
 layout: post
 title: "TurboQuant: KV cache hyper compression"
 date: 2026-04-05
-description: "TL;DR: As LLM trajectories get longer with the rise of agentic workflows, the KV cache becomes a massive memory bottleneck. Google's TurboQuant solves this via a lightweight, online, accelerator-friendly algorithm. We explore the beautiful high-dimensional geometry that makes it work: from random rotations on the $d$-sphere to minimize MSE distortion to unbiased inner products via QJL."
+description: "TL;DR: As LLM trajectories get longer with the rise of agentic workflows, the KV cache becomes a massive memory bottleneck. Google's TurboQuant solves this via a lightweight, online, accelerator-friendly algorithm. We explore the beautiful high-dimensional geometry that makes it work: random rotations on the $d$-sphere to minimize MSE distortion & unbiased inner products via the Quantized Johnson-Lindenstrauss transform."
 tags: llm, quantization, linear-algebra
 thumbnail: assets/img/posts/turboquant/thumbnail1.png
 ---
